@@ -1,0 +1,25 @@
+tasks:
+  - name: install google-cloud-sdk & gcloud configs
+    init: |
+      pip install -r requirements.txt
+      cp ipaexg.ttf /home/gitpod/.pyenv/versions/3.8.12/lib/python3.8/site-packages/matplotlib/mpl-data/fonts/ttf/
+      wget https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls
+      gp sync-done streamlit
+  - name: streamlit run
+    init: |
+      gp sync-await streamlit
+      streamlit run streamlit_jpx.py
+    openMode: split-right
+  - name: jupyter notebook run
+    init: |
+      gp sync-await streamlit
+      pip install jupytext openpyxl optuna pandas_gbq scikit-learn
+      jupyter notebook --generate-config
+      echo -e '\nc.NotebookApp.contents_manager_class = "jupytext.TextFileContentsManager"' >> ~/.jupyter/jupyter_notebook_config.py
+      echo -e '\nc.ContentsManager.default_jupytext_formats = "ipynb,py"' >> ~/.jupyter/jupyter_notebook_config.py
+      jupyter notebook --ip=*
+    openMode: split-right
+vscode:
+  extensions:
+    - timonwong.shellcheck
+  

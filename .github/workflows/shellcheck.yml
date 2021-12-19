@@ -1,0 +1,25 @@
+# This is a basic workflow to help you get started with Actions
+on:
+  push:
+    branches:
+      - main
+
+name: 'Shellscript Formatter'
+
+jobs:
+  shellcheck:
+    name: Shellcheck
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Run ShellCheck
+      uses: ludeeus/action-shellcheck@master
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v3
+      with:
+        commit-message: Shellcheck action fixes
+        title: Fixes by Shellcheck action
+        body: This is an auto-generated PR with fixes by autopep8.
+        labels: Shellcheck, automated pr
+        # reviewers: hanako-yamada
+        branch: Shellcheck-patches
