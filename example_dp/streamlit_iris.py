@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn import datasets
 from sklearn.ensemble import RandomForestClassifier
 
+
 def app():
     st.write("""
     # Simple Iris Flower Prediction App
@@ -10,7 +11,6 @@ def app():
     """)
 
     st.sidebar.header('User Input Parameters')
-
 
     def user_input_features():
         sepal_length = st.sidebar.slider('Sepal length', 4.3, 7.9, 5.4)
@@ -23,7 +23,6 @@ def app():
                 'petal_width': petal_width}
         features = pd.DataFrame(data, index=[0])
         return features
-
 
     df = user_input_features()
 

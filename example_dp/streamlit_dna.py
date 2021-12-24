@@ -3,6 +3,7 @@ import streamlit as st
 import altair as alt
 from PIL import Image
 
+
 def app():
     image = Image.open('example_dp/dna-logo.jpg')
 
@@ -34,7 +35,6 @@ def app():
     st.header('OUTPUT DNA Nucleotide Count')
     st.subheader('1. Print dictionary')
 
-
     def DNA_nucleotide_count(seq):
         d = dict([
             ('A', seq.count('A')),
@@ -44,7 +44,6 @@ def app():
         ])
 
         return d
-
 
     X = DNA_nucleotide_count(sequence)
 

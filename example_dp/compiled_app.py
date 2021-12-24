@@ -1,4 +1,4 @@
-#app.py
+# app.py
 
 import streamlit_yfinance
 import streamlit_sp500
@@ -28,8 +28,8 @@ PAGES = {
 }
 st.sidebar.title('Navigation')
 st.sidebar.markdown("""
-Applications are from [DataProfessor](https://github.com/dataprofessor/streamlit_freecodecamp)  
-Lectures are here : [Youtube](https://www.youtube.com/watch?v=JwSS70SZdyM)  
+Applications are from [DataProfessor](https://github.com/dataprofessor/streamlit_freecodecamp)
+Lectures are here : [Youtube](https://www.youtube.com/watch?v=JwSS70SZdyM)
 
 Some scripts are fixed due to errors by version updates.
 """)

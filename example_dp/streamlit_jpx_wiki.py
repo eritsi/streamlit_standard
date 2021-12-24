@@ -6,6 +6,7 @@ import seaborn as sns
 import numpy as np
 import yfinance as yf
 
+
 def app():
     plt.rcParams['font.family'] = 'IPAexGothic'
 
@@ -21,7 +22,6 @@ def app():
 
     # Web scraping of S&P 500 data
     #
-
 
     @st.cache
     def load_data():
@@ -51,31 +51,32 @@ def app():
         df.drop(columns=df.columns[3], inplace=True)
         # 証券コードが規定する業種区分(だいたい・・)
         # 　https://ja.wikipedia.org/wiki/%E8%A8%BC%E5%88%B8%E3%82%B3%E3%83%BC%E3%83%89
+
         def f_category(x):
             c = int(x.strip('（').strip('）'))
-            if c<1400:
+            if c < 1400:
                 CAT = '水産・農業'
-            elif c<1500:
+            elif c < 1500:
                 CAT = '住居'
-            elif c<1600:
+            elif c < 1600:
                 CAT = '鉱業'
-            elif c<1700:
+            elif c < 1700:
                 CAT = '鉱業（石油/ガス開発）'
-            elif c<2000:
+            elif c < 2000:
                 CAT = '建設'
-            elif c<3000:
+            elif c < 3000:
                 CAT = '食品'
-            elif c<4000:
+            elif c < 4000:
                 CAT = '繊維・紙'
-            elif c<5000:
+            elif c < 5000:
                 CAT = '化学・薬品'
-            elif c<6000:
+            elif c < 6000:
                 CAT = '資源・素材'
-            elif c<7000:
+            elif c < 7000:
                 CAT = '機械・電機'
-            elif c<8000:
+            elif c < 8000:
                 CAT = '自動車・輸送機'
-            elif c<9000:
+            elif c < 9000:
                 CAT = '金融・商業・不動産'
             else:
                 CAT = '運輸・通信・電気・ガス・サービス'
@@ -86,7 +87,6 @@ def app():
         df['code'] = df['code'].map(f_tickers)
 
         return df
-
 
     df = load_data()
     sector = df.groupby('JPX_sector')
@@ -106,26 +106,26 @@ def app():
         sorted_category_unique)
 
     # Filtering data
-    df_selected_sector = df[(df['JPX_sector'].isin(selected_sector)) & (df['category'].isin(selected_category))]
+    df_selected_sector = df[(df['JPX_sector'].isin(selected_sector)) & (
+        df['category'].isin(selected_category))]
 
     st.header('Display Companies in Selected Sector')
     st.write('Data Dimension: ' +
-            str(df_selected_sector.shape[0]) +
-            ' rows and ' +
-            str(df_selected_sector.shape[1]) +
-            ' columns.')
+             str(df_selected_sector.shape[0]) +
+             ' rows and ' +
+             str(df_selected_sector.shape[1]) +
+             ' columns.')
     st.dataframe(df_selected_sector)
-
 
     # Download JPX data
     # https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
+
     def filedownload(df):
         csv = df.to_csv(index=False)
         # strings <-> bytes conversions
         b64 = base64.b64encode(csv.encode()).decode()
         href = f'<a href="data:file/csv;base64,{b64}" download="SP500.csv">Download CSV File</a>'
         return href
-
 
     st.markdown(filedownload(df_selected_sector), unsafe_allow_html=True)
 
@@ -144,7 +144,6 @@ def app():
 
     # # Plot Closing Price of Query Symbol
 
-
     def price_plot(code, company):
         df = pd.DataFrame(data[code].Close)
         df['Date'] = df.index
@@ -156,7 +155,6 @@ def app():
         plt.xlabel('Date', fontweight='bold')
         plt.ylabel('Closing Price', fontweight='bold')
         return st.pyplot(f)
-
 
     num_company = st.sidebar.slider('Number of Companies', 1, 10)
 

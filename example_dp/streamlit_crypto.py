@@ -10,6 +10,7 @@ import requests
 import json
 import time
 
+
 def app():
     #---------------------------------#
     # New feature (make sure to upgrade your streamlit library)
@@ -39,7 +40,6 @@ def app():
     * **Credit:** Web scraper adapted from the Medium article *[Web Scraping Crypto Prices With Python](https://towardsdatascience.com/web-scraping-crypto-prices-with-python-41072ea5b5bf)* written by [Bryan Feng](https://medium.com/@bryanf).
     """)
 
-
     #---------------------------------#
     # Page layout (continued)
     # Divide page to 3 columns (col1 = sidebar, col2 and col3 = page contents)
@@ -56,7 +56,6 @@ def app():
 
     # Web scraping of CoinMarketCap data
 
-
     @st.cache
     def load_data():
         cmc = requests.get('https://coinmarketcap.com')
@@ -68,30 +67,57 @@ def app():
         listings = coin_data['props']['initialState']['cryptocurrency']['listingLatest']['data']
         listings[0]['keysArr'].append('unknown')
         df = pd.DataFrame(listings[2:], columns=listings[0]['keysArr'])
-        df = df.filter(items = ['slug',
-                                'symbol', 
-                                'quote.' + currency_price_unit + '.price',
-                                'quote.' + currency_price_unit + '.percentChange1h',
-                                'quote.' + currency_price_unit + '.percentChange24h',
-                                'quote.' + currency_price_unit + '.percentChange7d',
-                                'quote.' + currency_price_unit + '.marketCap',
-                                'quote.' + currency_price_unit + '.volume24h']).rename(columns={
-                                'slug':'coin_name',
-                                'symbol':'coin_symbol', 
-                                'quote.' + currency_price_unit + '.price':'market_cap',
-                                'quote.' + currency_price_unit + '.percentChange1h':'percent_change_1h',
-                                'quote.' + currency_price_unit + '.percentChange24h':'percent_change_24h',
-                                'quote.' + currency_price_unit + '.percentChange7d':'percent_change_7d',
-                                'quote.' + currency_price_unit + '.marketCap':'price',
-                                'quote.' + currency_price_unit + '.volume24h':'volume_24h'})
+        df = df.filter(
+            items=[
+                'slug',
+                'symbol',
+                'quote.' +
+                currency_price_unit +
+                '.price',
+                'quote.' +
+                currency_price_unit +
+                '.percentChange1h',
+                'quote.' +
+                currency_price_unit +
+                '.percentChange24h',
+                'quote.' +
+                currency_price_unit +
+                '.percentChange7d',
+                'quote.' +
+                currency_price_unit +
+                '.marketCap',
+                'quote.' +
+                currency_price_unit +
+                '.volume24h']).rename(
+            columns={
+                'slug': 'coin_name',
+                'symbol': 'coin_symbol',
+                'quote.' +
+                currency_price_unit +
+                '.price': 'market_cap',
+                'quote.' +
+                currency_price_unit +
+                '.percentChange1h': 'percent_change_1h',
+                'quote.' +
+                currency_price_unit +
+                '.percentChange24h': 'percent_change_24h',
+                'quote.' +
+                currency_price_unit +
+                '.percentChange7d': 'percent_change_7d',
+                'quote.' +
+                currency_price_unit +
+                '.marketCap': 'price',
+                'quote.' +
+                currency_price_unit +
+                '.volume24h': 'volume_24h'})
         return df
-
 
     df = load_data()
 
     # Sidebar - Cryptocurrency selections
     sorted_coin = sorted(df['coin_symbol'])
-    selected_coin = col1.multiselect('Cryptocurrency', sorted_coin, sorted_coin)
+    selected_coin = col1.multiselect(
+        'Cryptocurrency', sorted_coin, sorted_coin)
 
     # Filtering data
     df_selected_coin = df[(df['coin_symbol'].isin(selected_coin))]
@@ -102,7 +128,7 @@ def app():
 
     # Sidebar - Percent change timeframe
     percent_timeframe = col1.selectbox('Percent change time frame',
-                                    ['7d', '24h', '1h'])
+                                       ['7d', '24h', '1h'])
     percent_dict = {
         "7d": 'percent_change_7d',
         "24h": 'percent_change_24h',
@@ -114,16 +140,15 @@ def app():
 
     col2.subheader('Price Data of Selected Cryptocurrency')
     col2.write('Data Dimension: ' +
-            str(df_selected_coin.shape[0]) +
-            ' rows and ' +
-            str(df_selected_coin.shape[1]) +
-            ' columns.')
+               str(df_selected_coin.shape[0]) +
+               ' rows and ' +
+               str(df_selected_coin.shape[1]) +
+               ' columns.')
 
     col2.dataframe(df_coins)
 
     # Download CSV data
     # https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
-
 
     def filedownload(df):
         csv = df.to_csv(index=False)
@@ -132,17 +157,16 @@ def app():
         href = f'<a href="data:file/csv;base64,{b64}" download="crypto.csv">Download CSV File</a>'
         return href
 
-
     col2.markdown(filedownload(df_selected_coin), unsafe_allow_html=True)
 
     #---------------------------------#
     # Preparing data for Bar plot of % Price change
     col2.subheader('Table of % Price Change')
     df_change = pd.concat([df_coins.coin_symbol,
-                        df_coins.percent_change_1h,
-                        df_coins.percent_change_24h,
-                        df_coins.percent_change_7d],
-                        axis=1)
+                           df_coins.percent_change_1h,
+                           df_coins.percent_change_24h,
+                           df_coins.percent_change_7d],
+                          axis=1)
     df_change = df_change.set_index('coin_symbol')
     df_change['positive_percent_change_1h'] = df_change['percent_change_1h'] > 0
     df_change['positive_percent_change_24h'] = df_change['percent_change_24h'] > 0
