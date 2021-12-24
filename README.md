@@ -28,7 +28,7 @@ https://traingenerator.jrieke.com/
 https://share.streamlit.io/streamlit/demo-uber-nyc-pickups/
 - pianoGPT
 https://share.streamlit.io/annasajkh/pianogpt/main/main.py
-- tnd? XAIチート？
+- XAIチート？
 https://share.streamlit.io/59er/eng_la_web_demo/eng_main_la_demo_app.py
 - 統計勉強用
 https://share.streamlit.io/harmkenn/python-stat-tools/main/app.py
