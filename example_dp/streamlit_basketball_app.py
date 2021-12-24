@@ -16,7 +16,8 @@ def app():
     """)
 
     st.sidebar.header('User Input Features')
-    selected_year = st.sidebar.selectbox('Year', list(reversed(range(1950, 2020))))
+    selected_year = st.sidebar.selectbox(
+        'Year', list(reversed(range(1950, 2020))))
 
     @st.cache
     def load_data(year):
@@ -47,10 +48,10 @@ def app():
 
     st.header('Display Player Stats of Selected Team(s)')
     st.write('Data Dimension: ' +
-            str(df_selected_team.shape[0]) +
-            ' rows and ' +
-            str(df_selected_team.shape[1]) +
-            ' columns.')
+             str(df_selected_team.shape[0]) +
+             ' rows and ' +
+             str(df_selected_team.shape[1]) +
+             ' columns.')
     for val in ('2P%', '3P%', 'FT%', 'FG%', 'eFG%'):
         df_selected_team[val] = df_selected_team[val].astype(float)
 
@@ -59,14 +60,12 @@ def app():
     # Download NBA player stats data
     # https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
 
-
     def filedownload(df):
         csv = df.to_csv(index=False)
         # strings <-> bytes conversions
         b64 = base64.b64encode(csv.encode()).decode()
         href = f'<a href="data:file/csv;base64,{b64}" download="playerstats.csv">Download CSV File</a>'
         return href
-
 
     st.markdown(filedownload(df_selected_team), unsafe_allow_html=True)
 

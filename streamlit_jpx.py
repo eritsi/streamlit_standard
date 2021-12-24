@@ -78,9 +78,9 @@ selected_index = st.sidebar.multiselect(
 
 # Filtering data
 df_selected_sector = df[(df['JPX_sector'].isin(selected_sector))
-                    & (df['sector33'].isin(selected_sector33))
-                    & (df['sector17'].isin(selected_sector17))
-                    & (df['index'].isin(selected_index))]
+                        & (df['sector33'].isin(selected_sector33))
+                        & (df['sector17'].isin(selected_sector17))
+                        & (df['index'].isin(selected_index))]
 
 st.header('Display Companies in Selected Sector')
 st.write('Data Dimension: ' +
