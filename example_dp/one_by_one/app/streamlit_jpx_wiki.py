@@ -106,8 +106,7 @@ selected_category = st.sidebar.multiselect(
     sorted_category_unique)
 
 # Filtering data
-df_selected_sector = df[(df['JPX_sector'].isin(selected_sector)) & (
-    df['category'].isin(selected_category))]
+df_selected_sector = df[(df['JPX_sector'].isin(selected_sector)) & (df['category'].isin(selected_category))]
 
 st.header('Display Companies in Selected Sector')
 st.write('Data Dimension: ' +

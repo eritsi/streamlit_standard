@@ -67,57 +67,29 @@ def app():
         listings = coin_data['props']['initialState']['cryptocurrency']['listingLatest']['data']
         listings[0]['keysArr'].append('unknown')
         df = pd.DataFrame(listings[2:], columns=listings[0]['keysArr'])
-        df = df.filter(
-            items=[
-                'slug',
-                'symbol',
-                'quote.' +
-                currency_price_unit +
-                '.price',
-                'quote.' +
-                currency_price_unit +
-                '.percentChange1h',
-                'quote.' +
-                currency_price_unit +
-                '.percentChange24h',
-                'quote.' +
-                currency_price_unit +
-                '.percentChange7d',
-                'quote.' +
-                currency_price_unit +
-                '.marketCap',
-                'quote.' +
-                currency_price_unit +
-                '.volume24h']).rename(
-            columns={
-                'slug': 'coin_name',
-                'symbol': 'coin_symbol',
-                'quote.' +
-                currency_price_unit +
-                '.price': 'market_cap',
-                'quote.' +
-                currency_price_unit +
-                '.percentChange1h': 'percent_change_1h',
-                'quote.' +
-                currency_price_unit +
-                '.percentChange24h': 'percent_change_24h',
-                'quote.' +
-                currency_price_unit +
-                '.percentChange7d': 'percent_change_7d',
-                'quote.' +
-                currency_price_unit +
-                '.marketCap': 'price',
-                'quote.' +
-                currency_price_unit +
-                '.volume24h': 'volume_24h'})
+        df = df.filter(items = ['slug',
+                                'symbol', 
+                                'quote.' + currency_price_unit + '.price',
+                                'quote.' + currency_price_unit + '.percentChange1h',
+                                'quote.' + currency_price_unit + '.percentChange24h',
+                                'quote.' + currency_price_unit + '.percentChange7d',
+                                'quote.' + currency_price_unit + '.marketCap',
+                                'quote.' + currency_price_unit + '.volume24h']).rename(columns={
+                                'slug':'coin_name',
+                                'symbol':'coin_symbol', 
+                                'quote.' + currency_price_unit + '.price':'market_cap',
+                                'quote.' + currency_price_unit + '.percentChange1h':'percent_change_1h',
+                                'quote.' + currency_price_unit + '.percentChange24h':'percent_change_24h',
+                                'quote.' + currency_price_unit + '.percentChange7d':'percent_change_7d',
+                                'quote.' + currency_price_unit + '.marketCap':'price',
+                                'quote.' + currency_price_unit + '.volume24h':'volume_24h'})
         return df
 
     df = load_data()
 
     # Sidebar - Cryptocurrency selections
     sorted_coin = sorted(df['coin_symbol'])
-    selected_coin = col1.multiselect(
-        'Cryptocurrency', sorted_coin, sorted_coin)
+    selected_coin = col1.multiselect('Cryptocurrency', sorted_coin, sorted_coin)
 
     # Filtering data
     df_selected_coin = df[(df['coin_symbol'].isin(selected_coin))]
