@@ -64,8 +64,10 @@ else:
 st.subheader('Clustering Input')
 
 if uploaded_file is not None:
-    df_clustering_input = (df.iloc[:, 0].value_counts() == max(df.groupby(df.columns[0]).size()))
-    df_clustering_input = df[(df.iloc[:, 0]).isin(df_clustering_input[df_clustering_input].index)]
+    df_clustering_input = (df.iloc[:, 0].value_counts() == max(
+        df.groupby(df.columns[0]).size()))
+    df_clustering_input = df[(df.iloc[:, 0]).isin(
+        df_clustering_input[df_clustering_input].index)]
     df_clustering_input = df_clustering_input.reset_index(drop=True)
     st.write('Data Dimension: ' +
              str(len(df_clustering_input.iloc[:, 0].unique())) +
@@ -111,9 +113,9 @@ pivot_df = df_clustering_input.pivot_table(
     values=df.columns[3])
 cluster_dict = get_dengram(pivot_df, selected_threshold)
 
-df_cluster=pd.DataFrame (cluster_dict, index=['cluster',]).T
+df_cluster = pd.DataFrame(cluster_dict, index=['cluster', ]).T
 df_cluster.reset_index(inplace=True)
-df_cluster.rename(columns={'index':'product_code'}, inplace=True)
+df_cluster.rename(columns={'index': 'product_code'}, inplace=True)
 
 st.write('Cluster Dimension: ' +
          str(max(df_cluster.cluster))
@@ -124,45 +126,70 @@ if st.button('Plot by dendrogram cluster'):
     st.subheader('Cluster Plot')
     col2, col3 = st.columns((1, 1))
 
-    normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) / (pivot_df.T.max() - pivot_df.T.min())).T
+    normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
+                           (pivot_df.T.max() - pivot_df.T.min())).T
 
     plt.figure(figsize=(5, 25))
     plt.subplots_adjust(top=1, bottom=0)
     plt.xticks(rotation=90)
-    normalized_pivot_df.loc[(df_cluster[df_cluster['cluster']==1].product_code.to_list()),:].T.plot()
+    normalized_pivot_df.loc[(
+        df_cluster[df_cluster['cluster'] == 1].product_code.to_list()), :].T.plot()
     col3.pyplot(plt)
 
 # Clustering for other items with short time-history
 
-def _add_one_item_in_dendrogram(_item_code,_original_cluster_dict):
-    selected_one = df[df[df.columns[0]]==_item_code].pivot_table(
-    index=df.columns[0],
-    columns=[
-        df.columns[1],
-        df.columns[2]],
-    values=df.columns[3])
+
+def _add_one_item_in_dendrogram(_item_code, _original_cluster_dict):
+    selected_one = df[df[df.columns[0]] == _item_code].pivot_table(
+        index=df.columns[0],
+        columns=[
+            df.columns[1],
+            df.columns[2]],
+        values=df.columns[3])
 
     pivot_df_plus_one = pd.concat([pivot_df, selected_one], axis=0)
     # fillna(0)して長さを合わせる　 vs. DTW vs. 今年の値をリピートさせる
-    cluster_dict_plus_one = get_dengram(pivot_df_plus_one.fillna(0), selected_threshold)
-    plus_one_cluster_id = cluster_dict_plus_one[_item_code] # これは新しいデンドロでのクラスタ番号
+    cluster_dict_plus_one = get_dengram(
+        pivot_df_plus_one.fillna(0), selected_threshold)
+    # これは新しいデンドロでのクラスタ番号
+    plus_one_cluster_id = cluster_dict_plus_one[_item_code]
     # 新しいデンドロで同じクラスタに入った他のJANを取得
-    colleague_keys = [k for k, v in cluster_dict_plus_one.items() if v == plus_one_cluster_id]
+    colleague_keys = [
+        k for k,
+        v in cluster_dict_plus_one.items() if v == plus_one_cluster_id]
     colleague_keys.remove(_item_code)
     # 同僚itemが前のデンドロでどこのクラスタにいたかを取得
-    colleague_original_clusters = [_original_cluster_dict[colleague_keys[i]] for i in range(0,len(colleague_keys))]
-    original_clusters, original_cluster_colleague_counts = np.unique(colleague_original_clusters, return_counts=True)
+    colleague_original_clusters = [
+        _original_cluster_dict[colleague_keys[i]] for i in range(0, len(colleague_keys))]
+    original_clusters, original_cluster_colleague_counts = np.unique(
+        colleague_original_clusters, return_counts=True)
     # 複数のクラスタが得られた場合、より多くの同僚itemがいたクラスタを取得
-    recommended_original_cluster = original_clusters[[i for i, v in enumerate(original_cluster_colleague_counts) if v == max(original_cluster_colleague_counts)][0]]
+    recommended_original_cluster = original_clusters[[i for i, v in enumerate(
+        original_cluster_colleague_counts) if v == max(original_cluster_colleague_counts)][0]]
 
-    print('for item:{} newly entered cluster is {}'.format(_item_code, recommended_original_cluster))
-    
-    return recommended_original_cluster, original_clusters, original_cluster_colleague_counts 
+    print('for item:{} newly entered cluster is {}'.format(
+        _item_code, recommended_original_cluster))
+
+    return recommended_original_cluster, original_clusters, original_cluster_colleague_counts
+
 
 df_short_tf = pd.DataFrame()
-for i, item_code in enumerate(list(set(pd.unique(df[df.columns[0]])) - set(pd.unique(df_clustering_input[df_clustering_input.columns[0]])))):
-    recommended_original_cluster, original_clusters, original_cluster_colleague_counts = _add_one_item_in_dendrogram(item_code,cluster_dict)
-    df_short_tf=pd.concat([df_short_tf, pd.DataFrame([item_code, recommended_original_cluster, original_clusters, original_cluster_colleague_counts]).T], axis=0)
+for i, item_code in enumerate(list(set(pd.unique(df[df.columns[0]])) - set(
+        pd.unique(df_clustering_input[df_clustering_input.columns[0]])))):
+    recommended_original_cluster, original_clusters, original_cluster_colleague_counts = _add_one_item_in_dendrogram(
+        item_code, cluster_dict)
+    df_short_tf = pd.concat([df_short_tf,
+                             pd.DataFrame([item_code,
+                                           recommended_original_cluster,
+                                           original_clusters,
+                                           original_cluster_colleague_counts]).T],
+                            axis=0)
 
-df_short_tf.rename(columns={0: 'product_code', 1: 'cluster', 2: 'candidate_clusters', 3:'colleague_counts'}, inplace=True)
+df_short_tf.rename(
+    columns={
+        0: 'product_code',
+        1: 'cluster',
+        2: 'candidate_clusters',
+        3: 'colleague_counts'},
+    inplace=True)
 st.write(df_short_tf)

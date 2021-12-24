@@ -136,6 +136,6 @@ num_company = st.sidebar.slider('Number of Companies', 1, 30)
 
 if st.button('Show Plots'):
     st.header('Stock Closing Price')
-    for i, j in zip(list(df_selected_sector.code)[:num_company], 
+    for i, j in zip(list(df_selected_sector.code)[:num_company],
                     list(df_selected_sector.company)[:num_company]):
         price_plot(i, j)
