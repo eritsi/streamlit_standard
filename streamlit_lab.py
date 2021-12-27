@@ -87,20 +87,23 @@ selected_threshold = st.sidebar.slider('Dendrogram threshold', 0.0, 1.0, 0.17)
 # method='ward'固定は嫌だがとりあえず。
 
 
-def get_dengram(_df, _threshold):
+def get_dengram(_df, _threshold, _plot=True):
     _normalized_df = ((_df.dropna().T - _df.dropna().T.min()) /
                       (_df.dropna().T.max() - _df.dropna().T.min())).T
     clustered = linkage(_normalized_df, method='ward', metric='euclidean')
 
-    fig = plt.figure(figsize=(15, 10 / 2))
-    ax = fig.add_subplot(1, 1, 1, title="dendrogram")
+    if _plot==True:
+        fig = plt.figure(figsize=(15, 10 / 2))
+        ax = fig.add_subplot(1, 1, 1, title="dendrogram")
+        plt.xticks(rotation=90)  # JANコードは長くて見づらいので回転させる
+
     dendrogram(clustered, color_threshold=_threshold *
                max(clustered[:, 2]), labels=_df.index)
-    plt.xticks(rotation=90)  # JANコードは長くて見づらいので回転させる
 
     t = _threshold * max(clustered[:, 2])
     c = fcluster(clustered, t, criterion='distance')
-    st.pyplot(fig)
+    if _plot==True:
+        st.pyplot(fig)
 
     return dict(zip(list(_df.dropna().index), list(c)))
 
@@ -121,20 +124,25 @@ st.write('Cluster Dimension: ' +
          str(max(df_cluster.cluster))
          )
 # Plot by Dendrogram cluster
+normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) / (pivot_df.T.max() - pivot_df.T.min())).T
+display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+
+
+def plot_line_or_band(_df, _cluster):
+    a=[]
+    fig2 = plt.figure(figsize=(15, 10 / 2))
+    ax2 = fig2.add_subplot(1, 1, 1, title="dendrogram")
+    display_by_cluster(cluster_dict, _cluster, a)
+    #plt.subplot(int(a),2, 1)
+    _df.loc[(a),:].T.plot(figsize=(10, 5))
+    st.pyplot(fig2)
 
 if st.button('Plot by dendrogram cluster'):
     st.subheader('Cluster Plot')
     col2, col3 = st.columns((1, 1))
 
-    normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
-                           (pivot_df.T.max() - pivot_df.T.min())).T
-
-    plt.figure(figsize=(5, 25))
-    plt.subplots_adjust(top=1, bottom=0)
-    plt.xticks(rotation=90)
-    normalized_pivot_df.loc[(
-        df_cluster[df_cluster['cluster'] == 1].product_code.to_list()), :].T.plot()
-    col3.pyplot(plt)
+    for i in set(cluster_dict.values()):
+        plot_line_or_band(normalized_pivot_df, i)
 
 # Clustering for other items with short time-history
 
@@ -150,7 +158,7 @@ def _add_one_item_in_dendrogram(_item_code, _original_cluster_dict):
     pivot_df_plus_one = pd.concat([pivot_df, selected_one], axis=0)
     # fillna(0)して長さを合わせる　 vs. DTW vs. 今年の値をリピートさせる
     cluster_dict_plus_one = get_dengram(
-        pivot_df_plus_one.fillna(0), selected_threshold)
+        pivot_df_plus_one.fillna(0), selected_threshold, False)
     # これは新しいデンドロでのクラスタ番号
     plus_one_cluster_id = cluster_dict_plus_one[_item_code]
     # 新しいデンドロで同じクラスタに入った他のJANを取得
@@ -172,24 +180,25 @@ def _add_one_item_in_dendrogram(_item_code, _original_cluster_dict):
 
     return recommended_original_cluster, original_clusters, original_cluster_colleague_counts
 
+if st.button('clustering for shorter TH items'):
+    st.subheader('Cluster shorts')
+    df_short_tf = pd.DataFrame()
+    for i, item_code in enumerate(list(set(pd.unique(df[df.columns[0]])) - set(
+            pd.unique(df_clustering_input[df_clustering_input.columns[0]])))):
+        recommended_original_cluster, original_clusters, original_cluster_colleague_counts = _add_one_item_in_dendrogram(
+            item_code, cluster_dict)
+        df_short_tf = pd.concat([df_short_tf,
+                                pd.DataFrame([item_code,
+                                            recommended_original_cluster,
+                                            original_clusters,
+                                            original_cluster_colleague_counts]).T],
+                                axis=0)
 
-df_short_tf = pd.DataFrame()
-for i, item_code in enumerate(list(set(pd.unique(df[df.columns[0]])) - set(
-        pd.unique(df_clustering_input[df_clustering_input.columns[0]])))):
-    recommended_original_cluster, original_clusters, original_cluster_colleague_counts = _add_one_item_in_dendrogram(
-        item_code, cluster_dict)
-    df_short_tf = pd.concat([df_short_tf,
-                             pd.DataFrame([item_code,
-                                           recommended_original_cluster,
-                                           original_clusters,
-                                           original_cluster_colleague_counts]).T],
-                            axis=0)
-
-df_short_tf.rename(
-    columns={
-        0: 'product_code',
-        1: 'cluster',
-        2: 'candidate_clusters',
-        3: 'colleague_counts'},
-    inplace=True)
-st.write(df_short_tf)
+    df_short_tf.rename(
+        columns={
+            0: 'product_code',
+            1: 'cluster',
+            2: 'candidate_clusters',
+            3: 'colleague_counts'},
+        inplace=True)
+    st.write(df_short_tf)
