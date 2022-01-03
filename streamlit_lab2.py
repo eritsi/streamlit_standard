@@ -31,7 +31,6 @@ st.sidebar.markdown("""
 df = None
 df2 = None
 
-@st.cache
 def conventional_features(_df):
     # よく使われる特徴量を計算
     _df = _df.sort_values(_df.columns[0:3].to_list()).reset_index().drop("index", axis = 1)
@@ -62,6 +61,12 @@ if df is not None:
         sorted_categoricals,
         set(df.columns[0:3]))
 
+    # Sidebar - Clustering Column selection
+    selected_clustering = st.sidebar.selectbox(
+        'Select Clustering Column',
+        sorted_categoricals,
+        index=4)
+
     # Side bar - rolling period
     selected_rolling_window = st.sidebar.slider(
         'Set a Rolling Windows', 
@@ -71,82 +76,42 @@ if df is not None:
 
     if st.sidebar.button('Create More Features'):
         # よく使われる特徴量を計算
-        df2 = conventional_features(df)
+        df = conventional_features(df)
 
         # カテゴリカル変数へ変更
         for i in selected_categoricals:
             # st.sidebar.write(i)
-            df2[i] = df2[i].astype('category')
+            df[i] = df[i].astype('category')
         # カテゴリカル変数になると統計量が計算されなくなる
         # st.write(df.describe())
 
         st.subheader('Display Inputs for ML Model')
-        st.write(df2.head(40))
+        st.write(df.head(40))
 
-if df2 is not None:
-
-    sorted_features = sorted(df2.columns)
-    selected_features = st.sidebar.multiselect(
-        'Select Features for ML Model',
-        sorted_features,
-        set(sorted_features) - set(df2.columns[0]))
-
-    # Sidebar - Cluster Column selection
-    cluster_col = st.sidebar.selectbox(
-        'Select Cluster Column',
-        sorted_features
-    )
-
-    # Sidebar - Cluster selection
-    sorted_clusters = sorted(df[cluster_col].unique())
-    selected_fclusters = st.sidebar.multiselect(
-        'Select Clusters for ML Model',
-        sorted_clusters,
-        sorted_clusters)    
-
-    # カテゴリカル化が済んでいることが先へ進む条件
-    if st.sidebar.button('Create Model'):
-        # Sidebar - Feature selection
-        st.sidebar.write('WWIP...')
-    else:
-        st.write('Then, Create Features...')
+# # Sidebar - 目的変数以外のカラムで、モデル生成に使う特徴量を選ぶ
+# # sorted_features = df.columns
+# sorted_features = set(df.columns) - set(df.columns[3:4])
+# selected_features = st.sidebar.multiselect(
+#     'Select Features for ML Model',
+#     sorted_features,
+#     sorted_features)
 
 
+# # Sidebar - Cluster selection
+# sorted_clusters = sorted(df[selected_clustering].unique())
 
+# selected_clusters = st.sidebar.multiselect(
+#     'Select Clusters for ML Model',
+#     sorted_clusters,
+#     sorted_clusters)    
 
-
+# # カテゴリカル化が済んでいることが先へ進む条件
 # if st.sidebar.button('Create Model'):
-#     # オプションに沿ってモデルを作成
-#     st.sidebar.write('WIP...')
-
-
-# if df2 is not None:
-
+#     df_modeling = df[df[cluster_col].isin(sorted_clusters)]
 #     # Sidebar - Feature selection
-#     sorted_features = sorted(df2.columns)
-#     selected_features = st.sidebar.multiselect(
-#         'Select Features for ML Model',
-#         sorted_features,
-#         set(sorted_features) - set(df2.columns[3]))
-
-#     # Sidebar - Cluster Column selection
-#     cluster_col = st.sidebar.selectbox(
-#         'Select Cluster Column',
-#         sorted_features
-#     )
-
-#     # Sidebar - Cluster selection
-#     sorted_clusters = sorted(df2[cluster_col].unique())
-#     selected_fclusters = st.sidebar.multiselect(
-#         'Select Clusters for ML Model',
-#         sorted_clusters,
-#         sorted_clusters)
-    
-#     if st.sidebar.button('Create Model'):
-#         # オプションに沿ってモデルを作成
-#         st.sidebar.write('WIP...')
-
-
+#     st.sidebar.write(df_modeling)
 # else:
-#     df2 = pd.DataFrame()
+#     st.write('Then, Create Features...')
+
+
 
