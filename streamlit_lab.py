@@ -5,6 +5,7 @@ import seaborn as sns
 import numpy as np
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 
+
 def app():
     st.title('demand forcaster')
     st.markdown("""
@@ -39,20 +40,20 @@ def app():
     # Displays the user input features
     st.subheader('User Input')
     st.write('Data Dimension: ' +
-            str(len(df.iloc[:, 0].unique())) +
-            ' items and data from ' +
-            str(min(df.iloc[:, 1])) +
-            '. ' +
-            str(min(df[(df.iloc[:, 1] == min(df.iloc[:, 1]))].iloc[:, 2])) +
-            ' to ' +
-            str(max(df.iloc[:, 1])) +
-            '. ' +
-            str(max(df[(df.iloc[:, 1] == max(df.iloc[:, 1]))].iloc[:, 2])) +
-            '. It means ' +
-            str(max(df.groupby(df.columns[0]).size())) +
-            ' ticks and ' +
-            str(sum(df.groupby(df.columns[0]).size() == max(df.groupby(df.columns[0]).size()))) +
-            ' items have full-ticks time-history data.')
+             str(len(df.iloc[:, 0].unique())) +
+             ' items and data from ' +
+             str(min(df.iloc[:, 1])) +
+             '. ' +
+             str(min(df[(df.iloc[:, 1] == min(df.iloc[:, 1]))].iloc[:, 2])) +
+             ' to ' +
+             str(max(df.iloc[:, 1])) +
+             '. ' +
+             str(max(df[(df.iloc[:, 1] == max(df.iloc[:, 1]))].iloc[:, 2])) +
+             '. It means ' +
+             str(max(df.groupby(df.columns[0]).size())) +
+             ' ticks and ' +
+             str(sum(df.groupby(df.columns[0]).size() == max(df.groupby(df.columns[0]).size()))) +
+             ' items have full-ticks time-history data.')
 
     if uploaded_file is not None:
         st.write(df)
@@ -71,9 +72,9 @@ def app():
             df_clustering_input[df_clustering_input].index)]
         df_clustering_input = df_clustering_input.reset_index(drop=True)
         st.write('Data Dimension: ' +
-                str(len(df_clustering_input.iloc[:, 0].unique())) +
-                ' items.'
-                )
+                 str(len(df_clustering_input.iloc[:, 0].unique())) +
+                 ' items.'
+                 )
         st.write(df_clustering_input)
     else:
         st.write(
@@ -81,33 +82,32 @@ def app():
 
     # Dendrogram
     st.subheader('Dendrogram Output')
-    selected_threshold = st.sidebar.slider('Dendrogram threshold', 0.0, 1.0, 0.17)
+    selected_threshold = st.sidebar.slider(
+        'Dendrogram threshold', 0.0, 1.0, 0.17)
 
     # dropna()はDynamic　Warpingの実装を見据えるとイマイチなので直したい
     # 関数の中で正規化してるが、表示のために関数外でも正規化することになるので無駄っぽい
     # method='ward'固定は嫌だがとりあえず。
 
-
     def get_dengram(_df, _threshold, _plot=True):
         _normalized_df = ((_df.dropna().T - _df.dropna().T.min()) /
-                        (_df.dropna().T.max() - _df.dropna().T.min())).T
+                          (_df.dropna().T.max() - _df.dropna().T.min())).T
         clustered = linkage(_normalized_df, method='ward', metric='euclidean')
 
-        if _plot==True:
+        if _plot:
             fig = plt.figure(figsize=(15, 10 / 2))
             ax = fig.add_subplot(1, 1, 1, title="dendrogram")
             plt.xticks(rotation=90)  # JANコードは長くて見づらいので回転させる
 
         dendrogram(clustered, color_threshold=_threshold *
-                max(clustered[:, 2]), labels=_df.index)
+                   max(clustered[:, 2]), labels=_df.index)
 
         t = _threshold * max(clustered[:, 2])
         c = fcluster(clustered, t, criterion='distance')
-        if _plot==True:
+        if _plot:
             st.pyplot(fig)
 
         return dict(zip(list(_df.dropna().index), list(c)))
-
 
     pivot_df = df_clustering_input.pivot_table(
         index=df.columns[0],
@@ -122,20 +122,26 @@ def app():
     df_cluster.rename(columns={'index': 'product_code'}, inplace=True)
 
     st.write('Cluster Dimension: ' +
-            str(max(df_cluster.cluster))
-            )
+             str(max(df_cluster.cluster))
+             )
     # Plot by Dendrogram cluster
-    normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) / (pivot_df.T.max() - pivot_df.T.min())).T
-    display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+    normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
+                           (pivot_df.T.max() - pivot_df.T.min())).T
 
+    def display_by_cluster(
+        d,
+        l,
+        a): return [
+        a.append(k) for k,
+        v in d.items() if v == l]
 
     def plot_line_or_band(_df, _cluster):
-        a=[]
+        a = []
         fig2 = plt.figure(figsize=(15, 10 / 2))
         ax2 = fig2.add_subplot(1, 1, 1, title="dendrogram")
         display_by_cluster(cluster_dict, _cluster, a)
         #plt.subplot(int(a),2, 1)
-        _df.loc[(a),:].T.plot(figsize=(10, 5))
+        _df.loc[(a), :].T.plot(figsize=(10, 5))
         st.pyplot(fig2)
 
     if st.button('Plot by dendrogram cluster'):
@@ -146,7 +152,6 @@ def app():
             plot_line_or_band(normalized_pivot_df, i)
 
     # Clustering for other items with short time-history
-
 
     def _add_one_item_in_dendrogram(_item_code, _original_cluster_dict):
         selected_one = df[df[df.columns[0]] == _item_code].pivot_table(
@@ -189,10 +194,10 @@ def app():
             recommended_original_cluster, original_clusters, original_cluster_colleague_counts = _add_one_item_in_dendrogram(
                 item_code, cluster_dict)
             df_short_tf = pd.concat([df_short_tf,
-                                    pd.DataFrame([item_code,
-                                                recommended_original_cluster,
-                                                original_clusters,
-                                                original_cluster_colleague_counts]).T],
+                                     pd.DataFrame([item_code,
+                                                   recommended_original_cluster,
+                                                   original_clusters,
+                                                   original_cluster_colleague_counts]).T],
                                     axis=0)
 
         df_short_tf.rename(
