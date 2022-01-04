@@ -49,10 +49,10 @@ def app():
 
     # Sidebar - Model Selector
     MODELS = {
-        "Light GBM":0,
-        "SARIMA":1,
-        "状態空間モデル":2,
-        "Prophet":3
+        "Light GBM": 0,
+        "SARIMA": 1,
+        "状態空間モデル": 2,
+        "Prophet": 3
     }
     mdl = st.sidebar.radio("Select ML Models", MODELS)
 
@@ -85,7 +85,7 @@ def app():
             'random_state': 0,
             'n_jobs': -1,
             'importance_type': 'split'
-            }
+        }
         return params
 
     # カテゴリカル化が済んでいることが先へ進む条件
@@ -94,14 +94,14 @@ def app():
             df_modeling = df[df[selected_learning_col].isin(selected_clusters)]
             X_train, y_train = df_modeling[selected_features], df_modeling.iloc[:, 3]
             st.write(X_train)
-            
+
             params = set_params()
             model = lgb.LGBMRegressor(**params)
             model.fit(X_train, y_train)
             with open('test.pickle', mode='wb') as f:  # with構文でファイルパスとバイナリ書き込みモードを設定
-                pickle.dump(model, f)   
+                pickle.dump(model, f)
             st.write('pickle has been created')
-             
+
             st.session_state['categories'] = selected_clusters
         else:
             st.write("Not implemented yet...")

@@ -128,7 +128,12 @@ def app():
     normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
                            (pivot_df.T.max() - pivot_df.T.min())).T
 
-    display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+    def display_by_cluster(
+        d,
+        l,
+        a): return [
+        a.append(k) for k,
+        v in d.items() if v == l]
 
     def plot_line_or_band(_df, _cluster):
         a = []
