@@ -35,35 +35,34 @@ def app():
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
     else:
-        df = pd.DataFrame()
+        df = None
+        df_clustering_input = None
 
     # Displays the user input features
-    st.subheader('User Input')
-    st.write('Data Dimension: ' +
-             str(len(df.iloc[:, 0].unique())) +
-             ' items and data from ' +
-             str(min(df.iloc[:, 1])) +
-             '. ' +
-             str(min(df[(df.iloc[:, 1] == min(df.iloc[:, 1]))].iloc[:, 2])) +
-             ' to ' +
-             str(max(df.iloc[:, 1])) +
-             '. ' +
-             str(max(df[(df.iloc[:, 1] == max(df.iloc[:, 1]))].iloc[:, 2])) +
-             '. It means ' +
-             str(max(df.groupby(df.columns[0]).size())) +
-             ' ticks and ' +
-             str(sum(df.groupby(df.columns[0]).size() == max(df.groupby(df.columns[0]).size()))) +
-             ' items have full-ticks time-history data.')
-
+    st.subheader('1a. User Input')
     if uploaded_file is not None:
+        st.write('Data Dimension: ' +
+                str(len(df.iloc[:, 0].unique())) +
+                ' items and data from ' +
+                str(min(df.iloc[:, 1])) +
+                '. ' +
+                str(min(df[(df.iloc[:, 1] == min(df.iloc[:, 1]))].iloc[:, 2])) +
+                ' to ' +
+                str(max(df.iloc[:, 1])) +
+                '. ' +
+                str(max(df[(df.iloc[:, 1] == max(df.iloc[:, 1]))].iloc[:, 2])) +
+                '. It means ' +
+                str(max(df.groupby(df.columns[0]).size())) +
+                ' ticks and ' +
+                str(sum(df.groupby(df.columns[0]).size() == max(df.groupby(df.columns[0]).size()))) +
+                ' items have full-ticks time-history data.')
         st.write(df)
     else:
         st.write(
             'Awaiting CSV file to be uploaded.')
-        st.write(df)
-
+        
     # Select items with the longest time-history
-    st.subheader('Clustering Input')
+    st.subheader('1b. Clustering Input (Only full length items)')
 
     if uploaded_file is not None:
         df_clustering_input = (df.iloc[:, 0].value_counts() == max(
@@ -81,7 +80,7 @@ def app():
             'Awaiting CSV file to be uploaded.')
 
     # Dendrogram
-    st.subheader('Dendrogram Output')
+    st.subheader('1c. Dendrogram Output')
     selected_threshold = st.sidebar.slider(
         'Dendrogram threshold', 0.0, 1.0, 0.17)
 
@@ -109,26 +108,30 @@ def app():
 
         return dict(zip(list(_df.dropna().index), list(c)))
 
-    pivot_df = df_clustering_input.pivot_table(
-        index=df.columns[0],
-        columns=[
-            df.columns[1],
-            df.columns[2]],
-        values=df.columns[3])
-    cluster_dict = get_dengram(pivot_df, selected_threshold)
+    if uploaded_file is not None:
+        pivot_df = df_clustering_input.pivot_table(
+            index=df.columns[0],
+            columns=[
+                df.columns[1],
+                df.columns[2]],
+            values=df.columns[3])
+        cluster_dict = get_dengram(pivot_df, selected_threshold)
 
-    df_cluster = pd.DataFrame(cluster_dict, index=['cluster', ]).T
-    df_cluster.reset_index(inplace=True)
-    df_cluster.rename(columns={'index': 'product_code'}, inplace=True)
+        df_cluster = pd.DataFrame(cluster_dict, index=['cluster', ]).T
+        df_cluster.reset_index(inplace=True)
+        df_cluster.rename(columns={'index': 'product_code'}, inplace=True)
 
-    st.write('Cluster Dimension: ' +
-             str(max(df_cluster.cluster))
-             )
-    # Plot by Dendrogram cluster
-    normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
-                           (pivot_df.T.max() - pivot_df.T.min())).T
+        st.write('Cluster Dimension: ' +
+                str(max(df_cluster.cluster))
+                )
+        # Plot by Dendrogram cluster
+        normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
+                            (pivot_df.T.max() - pivot_df.T.min())).T
 
-    display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+        display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+    else:
+        st.write(
+            'Awaiting CSV file to be uploaded.')
 
     def plot_line_or_band(_df, _cluster):
         a = []
@@ -141,7 +144,6 @@ def app():
 
     if st.button('Plot by dendrogram cluster'):
         st.subheader('Cluster Plot')
-        col2, col3 = st.columns((1, 1))
 
         for i in set(cluster_dict.values()):
             plot_line_or_band(normalized_pivot_df, i)
