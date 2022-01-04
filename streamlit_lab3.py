@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import shap
+import pickle
+import lightgbm as lgb
 import matplotlib.pyplot as plt
 
 
@@ -47,9 +49,10 @@ def app():
 
     # Sidebar - Model Selector
     MODELS = {
-        "Light GBM",
-        "SARIMA",
-        "状態空間モデル"
+        "Light GBM":0,
+        "SARIMA":1,
+        "状態空間モデル":2,
+        "Prophet":3
     }
     mdl = st.sidebar.radio("Select ML Models", MODELS)
 
@@ -61,12 +64,44 @@ def app():
     min_child_samples = st.sidebar.slider(
         'Min Child Samples', 1, 150, 100)  # default
 
+    def set_params():
+        params = {
+            'num_leaves': num_leaves,
+            'max_depth': max_depth,
+            'boosting_type': 'gbdt',
+            'learning_rate': 0.1,
+            'n_estimators': 100,
+            'subsample_for_bin': 200000,
+            'objective': None,
+            'class_weight': None,
+            'min_split_gain': 0.0,
+            'min_child_weight': 0.001,
+            'min_child_samples': min_child_samples,
+            'subsample': 1.0,
+            'subsample_freq': 0,
+            'colsample_bytree': 1.0,
+            'reg_alpha': 0.0,
+            'reg_lambda': 0.0,
+            'random_state': 0,
+            'n_jobs': -1,
+            'importance_type': 'split'
+            }
+        return params
+
     # カテゴリカル化が済んでいることが先へ進む条件
     if st.button('Create Model'):
         if mdl == 'Light GBM':
             df_modeling = df[df[selected_learning_col].isin(selected_clusters)]
-            # Sidebar - Feature selection
-            st.write(df_modeling)
+            X_train, y_train = df_modeling[selected_features], df_modeling.iloc[:, 3]
+            st.write(X_train)
+            
+            params = set_params()
+            model = lgb.LGBMRegressor(**params)
+            model.fit(X_train, y_train)
+            with open('test.pickle', mode='wb') as f:  # with構文でファイルパスとバイナリ書き込みモードを設定
+                pickle.dump(model, f)   
+            st.write('pickle has been created')
+             
             st.session_state['categories'] = selected_clusters
         else:
             st.write("Not implemented yet...")
