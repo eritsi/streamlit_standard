@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 
+
 def app():
     st.title('demand model creator')
     st.markdown("""
@@ -35,14 +36,22 @@ def app():
 
     def conventional_features(_df):
         # よく使われる特徴量を計算
-        _df = _df.sort_values(_df.columns[0:3].to_list()).reset_index().drop("index", axis = 1)
-        _df["min"]=_df.groupby([_df.columns[0]]).shift(1).rolling(selected_rolling_window)[_df.columns[3]].min().reset_index()[_df.columns[3]]
-        _df["max"]=_df.groupby([_df.columns[0]]).shift(1).rolling(selected_rolling_window)[_df.columns[3]].max().reset_index()[_df.columns[3]]
-        _df["std"]=_df.groupby([_df.columns[0]]).shift(1).rolling(selected_rolling_window)[_df.columns[3]].std().reset_index()[_df.columns[3]]
-        _df["lag1"]=_df.groupby([_df.columns[0]]).shift(1).rolling(1)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
-        _df["cumsum1_2"]=_df.groupby([_df.columns[0]]).shift(1).rolling(2)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
-        _df["cumsum1_3"]=_df.groupby([_df.columns[0]]).shift(1).rolling(3)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
-        _df["cumsum1_4"]=_df.groupby([_df.columns[0]]).shift(1).rolling(4)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
+        _df = _df.sort_values(
+            _df.columns[0:3].to_list()).reset_index().drop("index", axis=1)
+        _df["min"] = _df.groupby([_df.columns[0]]).shift(1).rolling(
+            selected_rolling_window)[_df.columns[3]].min().reset_index()[_df.columns[3]]
+        _df["max"] = _df.groupby([_df.columns[0]]).shift(1).rolling(
+            selected_rolling_window)[_df.columns[3]].max().reset_index()[_df.columns[3]]
+        _df["std"] = _df.groupby([_df.columns[0]]).shift(1).rolling(
+            selected_rolling_window)[_df.columns[3]].std().reset_index()[_df.columns[3]]
+        _df["lag1"] = _df.groupby([_df.columns[0]]).shift(1).rolling(
+            1)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
+        _df["cumsum1_2"] = _df.groupby([_df.columns[0]]).shift(1).rolling(
+            2)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
+        _df["cumsum1_3"] = _df.groupby([_df.columns[0]]).shift(1).rolling(
+            3)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
+        _df["cumsum1_4"] = _df.groupby([_df.columns[0]]).shift(1).rolling(
+            4)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
 
         return _df
 
@@ -71,9 +80,9 @@ def app():
 
         # Side bar - rolling period
         selected_rolling_window = st.sidebar.slider(
-            'Set a Rolling Windows for Min/Max/Std calc', 
-            0, 
-            20, 
+            'Set a Rolling Windows for Min/Max/Std calc',
+            0,
+            20,
             6)
 
         if st.button('Create More Features'):

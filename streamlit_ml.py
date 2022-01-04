@@ -12,9 +12,9 @@ from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 st.set_page_config(layout="wide")
 
 PAGES = {
-    "1. クラスタリング":streamlit_lab,
-    "2. データ入力と加工":streamlit_lab2,
-    "3. 学習":streamlit_lab3,
+    "1. クラスタリング": streamlit_lab,
+    "2. データ入力と加工": streamlit_lab2,
+    "3. 学習": streamlit_lab3,
     # "データ可視化":out_page
 }
 st.sidebar.title('Navigation')
@@ -25,4 +25,3 @@ Some scripts are fixed due to errors by version updates.
 selection = st.sidebar.radio("Go to", list(PAGES.keys()))
 page = PAGES[selection]
 page.app()
-

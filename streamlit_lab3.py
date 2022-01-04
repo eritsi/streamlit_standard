@@ -3,6 +3,7 @@ import pandas as pd
 import shap
 import matplotlib.pyplot as plt
 
+
 def app():
     st.title('demand model creator')
     st.markdown("""
@@ -28,7 +29,6 @@ def app():
     if 'learning_col' not in st.session_state:
         st.write("Using all clustering for model creation")
 
-
     # Sidebar - 目的変数以外のカラムで、モデル生成に使う特徴量を選ぶ
     # sorted_features = df.columns
     sorted_features = set(df.columns) - set(df.columns[3:4])
@@ -36,7 +36,6 @@ def app():
         'Select Features for ML Model',
         sorted_features,
         sorted_features)
-
 
     # Sidebar - Cluster selection
     sorted_clusters = sorted(df[selected_learning_col].unique())
@@ -51,18 +50,20 @@ def app():
         "Light GBM",
         "SARIMA",
         "状態空間モデル"
-        }
+    }
     mdl = st.sidebar.radio("Select ML Models", MODELS)
 
     # Sidebar - Optuna
     st.sidebar.subheader("Tuning Parameters")
-    num_leaves = st.sidebar.slider('Number of Leaves', 500, 1500, 731) # default 1024
-    max_depth = st.sidebar.slider('Max Depth', -1, 128, 102) # default -1
-    min_child_samples = st.sidebar.slider('Min Child Samples', 1, 150, 100) # default
+    num_leaves = st.sidebar.slider(
+        'Number of Leaves', 500, 1500, 731)  # default 1024
+    max_depth = st.sidebar.slider('Max Depth', -1, 128, 102)  # default -1
+    min_child_samples = st.sidebar.slider(
+        'Min Child Samples', 1, 150, 100)  # default
 
     # カテゴリカル化が済んでいることが先へ進む条件
     if st.button('Create Model'):
-        if mdl=='Light GBM':
+        if mdl == 'Light GBM':
             df_modeling = df[df[selected_learning_col].isin(selected_clusters)]
             # Sidebar - Feature selection
             st.write(df_modeling)
@@ -71,6 +72,3 @@ def app():
             st.write("Not implemented yet...")
     else:
         st.write('Then, Create Features...')
-
-
-
