@@ -31,8 +31,8 @@ def app():
     df = None
     if 'ML_df' not in st.session_state:
         st.session_state['ML_df'] = pd.DataFrame()
-    if 'clustering' not in st.session_state:
-        st.session_state['clustering'] = None
+    if 'learning_col' not in st.session_state:
+        st.session_state['learning_col'] = None
 
     def conventional_features(_df):
         # よく使われる特徴量を計算
