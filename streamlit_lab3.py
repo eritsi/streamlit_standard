@@ -31,7 +31,6 @@ def app():
         df = st.session_state['ML_df']
         selected_learning_col = st.session_state['learning_col']
 
-
         # Sidebar - 目的変数以外のカラムで、モデル生成に使う特徴量を選ぶ
         # 全選択からドロップしていく方法だとエラーが出る。おそらくsession_state関係
         # sorted_features = sorted(df.columns)
@@ -47,13 +46,13 @@ def app():
             'Select Clusters for ML Model',
             sorted_clusters,
             sorted_clusters)
-        
+
         # Sidebar - Model Selector
         MODELS = {
-            "Light GBM":0,
-            "SARIMA":1,
-            "状態空間モデル":2,
-            "Prophet":3
+            "Light GBM": 0,
+            "SARIMA": 1,
+            "状態空間モデル": 2,
+            "Prophet": 3
         }
         mdl = st.sidebar.radio("Select ML Models", MODELS)
 
@@ -86,25 +85,26 @@ def app():
                 'random_state': 0,
                 'n_jobs': -1,
                 'importance_type': 'split'
-                }
+            }
             return params
 
         # カテゴリカル化が済んでいることが先へ進む条件
         if st.button('Create Model'):
             if mdl == 'Light GBM':
-                df_modeling = df[df[selected_learning_col].isin(selected_clusters)]
+                df_modeling = df[df[selected_learning_col].isin(
+                    selected_clusters)]
                 X_train, y_train = df_modeling[selected_features], df_modeling.iloc[:, 3]
                 st.write(X_train)
                 st.session_state['X_train'] = X_train
-                
+
                 params = set_params()
                 model = lgb.LGBMRegressor(**params)
                 model.fit(X_train, y_train)
                 st.session_state['model'] = model
                 with open('test.pickle', mode='wb') as f:  # with構文でファイルパスとバイナリ書き込みモードを設定
-                    pickle.dump(model, f)   
+                    pickle.dump(model, f)
                 st.write('pickle has been created')
-                
+
                 st.session_state['categories'] = selected_clusters
             else:
                 st.write("Not implemented yet...")
@@ -114,4 +114,3 @@ def app():
             X_train, y_train = df_modeling[selected_features], df_modeling.iloc[:, 3]
             st.session_state['X_train'] = X_train
             st.session_state['categories'] = selected_clusters
-

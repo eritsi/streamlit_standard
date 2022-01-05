@@ -42,25 +42,25 @@ def app():
     st.subheader('1a. User Input')
     if uploaded_file is not None:
         st.write('Data Dimension: ' +
-                str(len(df.iloc[:, 0].unique())) +
-                ' items and data from ' +
-                str(min(df.iloc[:, 1])) +
-                '. ' +
-                str(min(df[(df.iloc[:, 1] == min(df.iloc[:, 1]))].iloc[:, 2])) +
-                ' to ' +
-                str(max(df.iloc[:, 1])) +
-                '. ' +
-                str(max(df[(df.iloc[:, 1] == max(df.iloc[:, 1]))].iloc[:, 2])) +
-                '. It means ' +
-                str(max(df.groupby(df.columns[0]).size())) +
-                ' ticks and ' +
-                str(sum(df.groupby(df.columns[0]).size() == max(df.groupby(df.columns[0]).size()))) +
-                ' items have full-ticks time-history data.')
+                 str(len(df.iloc[:, 0].unique())) +
+                 ' items and data from ' +
+                 str(min(df.iloc[:, 1])) +
+                 '. ' +
+                 str(min(df[(df.iloc[:, 1] == min(df.iloc[:, 1]))].iloc[:, 2])) +
+                 ' to ' +
+                 str(max(df.iloc[:, 1])) +
+                 '. ' +
+                 str(max(df[(df.iloc[:, 1] == max(df.iloc[:, 1]))].iloc[:, 2])) +
+                 '. It means ' +
+                 str(max(df.groupby(df.columns[0]).size())) +
+                 ' ticks and ' +
+                 str(sum(df.groupby(df.columns[0]).size() == max(df.groupby(df.columns[0]).size()))) +
+                 ' items have full-ticks time-history data.')
         st.write(df)
     else:
         st.write(
             'Awaiting CSV file to be uploaded.')
-        
+
     # Select items with the longest time-history
     st.subheader('1b. Clustering Input (Only full length items)')
 
@@ -122,13 +122,14 @@ def app():
         df_cluster.rename(columns={'index': 'product_code'}, inplace=True)
 
         st.write('Cluster Dimension: ' +
-                str(max(df_cluster.cluster))
-                )
+                 str(max(df_cluster.cluster))
+                 )
         # Plot by Dendrogram cluster
         normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
-                            (pivot_df.T.max() - pivot_df.T.min())).T
+                               (pivot_df.T.max() - pivot_df.T.min())).T
 
-        display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+        def display_by_cluster(d, l, a): return [
+            a.append(k) for k, v in d.items() if v == l]
     else:
         st.write(
             'Awaiting CSV file to be uploaded.')
