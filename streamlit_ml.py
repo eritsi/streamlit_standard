@@ -1,6 +1,7 @@
 import streamlit_lab
 import streamlit_lab2
 import streamlit_lab3
+import streamlit_lab4
 
 import streamlit as st
 import pandas as pd
@@ -15,7 +16,7 @@ PAGES = {
     "1. クラスタリング": streamlit_lab,
     "2. データ入力と加工": streamlit_lab2,
     "3. 学習": streamlit_lab3,
-    # "データ可視化":out_page
+    "4. 推論と可視化": streamlit_lab4,
 }
 st.sidebar.title('Navigation')
 st.sidebar.markdown("""

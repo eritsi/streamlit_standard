@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import shap
 import pickle
 import lightgbm as lgb
 import matplotlib.pyplot as plt
@@ -36,7 +35,7 @@ def app():
         # Sidebar - 目的変数以外のカラムで、モデル生成に使う特徴量を選ぶ
         # 全選択からドロップしていく方法だとエラーが出る。おそらくsession_state関係
         # sorted_features = sorted(df.columns)
-        sorted_features = list(set(df.columns) - set(df.columns[3:4]))
+        sorted_features = sorted(list(set(df.columns) - set(df.columns[3:4])))
         selected_features = st.sidebar.multiselect(
             'Select Features for ML Model',
             sorted_features)
@@ -96,10 +95,12 @@ def app():
                 df_modeling = df[df[selected_learning_col].isin(selected_clusters)]
                 X_train, y_train = df_modeling[selected_features], df_modeling.iloc[:, 3]
                 st.write(X_train)
+                st.session_state['X_train'] = X_train
                 
                 params = set_params()
                 model = lgb.LGBMRegressor(**params)
                 model.fit(X_train, y_train)
+                st.session_state['model'] = model
                 with open('test.pickle', mode='wb') as f:  # with構文でファイルパスとバイナリ書き込みモードを設定
                     pickle.dump(model, f)   
                 st.write('pickle has been created')
@@ -109,3 +110,8 @@ def app():
                 st.write("Not implemented yet...")
         else:
             st.write('Select Feature Columns and Learning Scope.')
+            df_modeling = df[df[selected_learning_col].isin(selected_clusters)]
+            X_train, y_train = df_modeling[selected_features], df_modeling.iloc[:, 3]
+            st.session_state['X_train'] = X_train
+            st.session_state['categories'] = selected_clusters
+
