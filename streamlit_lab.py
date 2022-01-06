@@ -6,6 +6,8 @@ from util_ml import get_dengram, add_one_item_in_dendrogram, plot_line_or_band, 
 
 # Download clustering result
 # https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
+
+
 def filedownload(df):
     csv = df.to_csv(index=False, encoding='utf-8_sig')
     # strings <-> bytes conversions
@@ -52,11 +54,9 @@ def app():
         st.write('Data Dimension: {} items and data '.format(len(df.iloc[:, 0].unique())) +
                  'from {}.{}'.format(min(df.iloc[:, 1]), min(df[(df.iloc[:, 1] == min(df.iloc[:, 1]))].iloc[:, 2])) +
                  ' to {}.{}.'.format(max(df.iloc[:, 1]), max(df[(df.iloc[:, 1] == max(df.iloc[:, 1]))].iloc[:, 2])) +
-                 ' ({} ticks)'.format(max(df.groupby(df.columns[0]).size()))
-                 )
+                 ' ({} ticks)'.format(max(df.groupby(df.columns[0]).size())))
         st.write('Number of the items which have full-ticks time-history data: ' +
-                 str(sum(df.groupby(df.columns[0]).size() == max(df.groupby(df.columns[0]).size())))
-                 )
+                 str(sum(df.groupby(df.columns[0]).size() == max(df.groupby(df.columns[0]).size()))))
         st.write(df.head(10))
     else:
         st.write('Awaiting CSV file to be uploaded.')
@@ -69,7 +69,8 @@ def app():
         df_clustering_input = df[(df.iloc[:, 0]).isin(
             df_clustering_input[df_clustering_input].index)]
         df_clustering_input = df_clustering_input.reset_index(drop=True)
-        st.write('Data Dimension: {} items.'.format(len(df_clustering_input.iloc[:, 0].unique())))
+        st.write('Data Dimension: {} items.'.format(
+            len(df_clustering_input.iloc[:, 0].unique())))
         st.write(df_clustering_input)
     else:
         st.write(
@@ -89,11 +90,12 @@ def app():
         df_long_tf.reset_index(inplace=True)
         df_long_tf.rename(columns={'index': 'product_code'}, inplace=True)
 
-        st.write('Number of Clusters : {}'.format(len(df_long_tf.cluster.unique())))
+        st.write('Number of Clusters : {}'.format(
+            len(df_long_tf.cluster.unique())))
     else:
         st.write(
             'Awaiting CSV file to be uploaded.')
-    
+
     # Plot by Dendrogram cluster
     if st.button('Plot by dendrogram cluster'):
         st.subheader('Cluster Plot')
@@ -110,9 +112,11 @@ def app():
 
         df_short_tf = pd.DataFrame()
         all_items = pd.unique(df[df.columns[0]])
-        long_items = pd.unique(df_clustering_input[df_clustering_input.columns[0]])
+        long_items = pd.unique(
+            df_clustering_input[df_clustering_input.columns[0]])
 
-        # launch dendrogram for all the items with shorter time-history, one by one
+        # launch dendrogram for all the items with shorter time-history, one by
+        # one
         for item_code in list(set(all_items) - set(long_items)):
             one_item = pivot_df_for_dengram(df[df[df.columns[0]] == item_code])
             pivot_df_plus_one = pd.concat([pivot_df, one_item], axis=0)
@@ -140,4 +144,3 @@ def app():
         df_cluster = pd.concat([df_short_tf, df_long_tf])
         st.write(df_cluster)
         st.markdown(filedownload(df_cluster), unsafe_allow_html=True)
-        

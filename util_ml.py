@@ -4,6 +4,7 @@ import numpy as np
 
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 
+
 def pivot_df_for_dengram(df):
     """ データフレームをピボットする（デンドログラム用）
         Parameters
@@ -17,12 +18,13 @@ def pivot_df_for_dengram(df):
         pivot_df : T1,T2のマルチインデックスで、列ごとにid(インデックス)が並ぶ。
     """
     pivot_df = df.pivot_table(
-            index=df.columns[0],
-            columns=[
-                df.columns[1],
-                df.columns[2]],
-            values=df.columns[3])
+        index=df.columns[0],
+        columns=[
+            df.columns[1],
+            df.columns[2]],
+        values=df.columns[3])
     return pivot_df
+
 
 def get_dengram(pivot_df, threshold, plot=True):
     """ データフレームを正規化してデンドログラムにかけ、結果とグラフのfigを返す
@@ -51,7 +53,7 @@ def get_dengram(pivot_df, threshold, plot=True):
         # method='ward'固定は嫌だがとりあえず。
     """
     normalized_df = ((pivot_df.dropna().T - pivot_df.dropna().T.min()) /
-                        (pivot_df.dropna().T.max() - pivot_df.dropna().T.min())).T
+                     (pivot_df.dropna().T.max() - pivot_df.dropna().T.min())).T
     clustered = linkage(normalized_df, method='ward', metric='euclidean')
 
     if plot:
@@ -62,14 +64,19 @@ def get_dengram(pivot_df, threshold, plot=True):
         fig = None
 
     dendrogram(clustered, color_threshold=threshold *
-                max(clustered[:, 2]), labels=pivot_df.index)
+               max(clustered[:, 2]), labels=pivot_df.index)
 
     t = threshold * max(clustered[:, 2])
     c = fcluster(clustered, t, criterion='distance')
-    
+
     return dict(zip(list(pivot_df.dropna().index), list(c))), fig
 
-def add_one_item_in_dendrogram(pivot_df_plus_one, threshold, item_code, original_cluster_dict):
+
+def add_one_item_in_dendrogram(
+        pivot_df_plus_one,
+        threshold,
+        item_code,
+        original_cluster_dict):
     """ デンドログラムにitemを1つ追加し、追加前のクラスタにわりつける
         Parameters
         ----------
@@ -89,7 +96,8 @@ def add_one_item_in_dendrogram(pivot_df_plus_one, threshold, item_code, original
         fillna(0)して長さを合わせる　 vs. DTW vs. 今年の値をリピートさせる
     """
     # fillna(0)して長さを合わせる　 vs. DTW vs. 今年の値をリピートさせる
-    cluster_dict_plus_one, fig = get_dengram(pivot_df_plus_one.fillna(0), threshold, False)
+    cluster_dict_plus_one, fig = get_dengram(
+        pivot_df_plus_one.fillna(0), threshold, False)
     # これは新しいデンドロでのクラスタ番号
     plus_one_cluster_id = cluster_dict_plus_one[item_code]
     # 新しいデンドロで同じクラスタに入った他のJANを取得
@@ -106,9 +114,11 @@ def add_one_item_in_dendrogram(pivot_df_plus_one, threshold, item_code, original
     recommended_original_cluster = original_clusters[[i for i, v in enumerate(
         original_cluster_colleague_counts) if v == max(original_cluster_colleague_counts)][0]]
 
-    print('for item:{} newly entered cluster is {}'.format(item_code, recommended_original_cluster))
+    print('for item:{} newly entered cluster is {}'.format(
+        item_code, recommended_original_cluster))
 
     return recommended_original_cluster, original_clusters, original_cluster_colleague_counts
+
 
 def plot_line_or_band(pivot_df, cluster_dict, cluster):
     """ データフレームを正規化してデンドログラムにかけ、結果とグラフのfigを返す
@@ -122,13 +132,19 @@ def plot_line_or_band(pivot_df, cluster_dict, cluster):
         Returns
         -------
         fig : 指定のクラスタに所属するidの時系列プロットのfig
-    """    
+    """
     a = []
-    display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+
+    def display_by_cluster(
+        d,
+        l,
+        a): return [
+        a.append(k) for k,
+        v in d.items() if v == l]
 
     fig = plt.figure(figsize=(15, 10 / 2))
-    ax = fig.add_subplot(1, 1, 1, title="dendrogram cluster = {}".format(cluster))
+    ax = fig.add_subplot(
+        1, 1, 1, title="dendrogram cluster = {}".format(cluster))
     display_by_cluster(cluster_dict, cluster, a)
     pivot_df.loc[(a), :].T.plot(figsize=(10, 5), ax=ax)
     return fig
-    
