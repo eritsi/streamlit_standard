@@ -57,12 +57,12 @@ def app():
         mdl = st.sidebar.radio("Select ML Models", MODELS)
 
         # Sidebar - Optuna
-        st.sidebar.subheader("Tuning Parameters")
+        st.sidebar.subheader("Tuning Hyper Parameters")
         num_leaves = st.sidebar.slider(
-            'Number of Leaves', 500, 1500, 731)  # default 1024
-        max_depth = st.sidebar.slider('Max Depth', -1, 128, 102)  # default -1
+            'Number of Leaves (default: 31)', 500, 1500, 731)
+        max_depth = st.sidebar.slider('Max Depth (default:-1)', -1, 128, 102)
         min_child_samples = st.sidebar.slider(
-            'Min Child Samples', 1, 150, 100)  # default
+            'Min Child Samples (deafult: 20)', 1, 150, 100)  # default
 
         def set_params():
             params = {
