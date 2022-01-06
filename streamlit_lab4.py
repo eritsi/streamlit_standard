@@ -38,7 +38,7 @@ def app():
         X_train = st.session_state['X_train']
         model = st.session_state['model']
         selected_clusters = st.session_state['categories']
-    
+
     if st.button('SHAP'):
         st.set_option('deprecation.showPyplotGlobalUse', False)
 
@@ -62,5 +62,4 @@ def app():
         for c in selected_clusters:
             ML_df = st.session_state['ML_df']
             st.write(c)
-            st.write(ML_df[ML_df['cluster']==c].iloc[:, 0:4])
-    
+            st.write(ML_df[ML_df['cluster'] == c].iloc[:, 0:4])
