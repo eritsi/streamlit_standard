@@ -128,7 +128,8 @@ def app():
         normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
                                (pivot_df.T.max() - pivot_df.T.min())).T
 
-        display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+        def display_by_cluster(d, l, a): return [
+            a.append(k) for k, v in d.items() if v == l]
     else:
         st.write(
             'Awaiting CSV file to be uploaded.')
@@ -136,7 +137,8 @@ def app():
     def plot_line_or_band(_df, _cluster):
         a = []
         fig2 = plt.figure(figsize=(15, 10 / 2))
-        ax2 = fig2.add_subplot(1, 1, 1, title="dendrogram cluster = {}".format(_cluster))
+        ax2 = fig2.add_subplot(
+            1, 1, 1, title="dendrogram cluster = {}".format(_cluster))
         display_by_cluster(cluster_dict, _cluster, a)
         #plt.subplot(int(a),2, 1)
         _df.loc[(a), :].T.plot(figsize=(10, 5), ax=ax2)
