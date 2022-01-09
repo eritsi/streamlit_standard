@@ -101,3 +101,4 @@ def app():
             st.write('DataFrame is ready. Please go to next app(3. 学習).')
             st.session_state['ML_df'] = df
             st.session_state['learning_col'] = selected_learning_col
+            st.session_state['df_time'] = df.iloc[:,[1,2]].drop_duplicates()

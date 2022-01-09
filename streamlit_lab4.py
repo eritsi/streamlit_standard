@@ -28,14 +28,19 @@ def app():
         pickle_file = st.sidebar.file_uploader(
             "Upload your input pickle file", type=["pickle"])
         if pickle_file:
-            model = pickle.load(pickle_file)
+            pckl = pickle.load(pickle_file)
+            model = pckl['model']
             st.write(model)
-            X_train = st.session_state['X_train']
-            selected_clusters = st.session_state['categories']
-    elif 'X_train' not in st.session_state:
+            X_inference = pckl['X']
+            selected_clusters = pckl['categories']
+            st.write('Feature columns in order...')
+            st.write(X_inference.columns.to_list())
+            st.write('Clusters used for training')
+            st.write(selected_clusters)
+    elif 'X_inference' not in st.session_state:
         st.write("Go back to 3.")
     else:
-        X_train = st.session_state['X_train']
+        X_inference = st.session_state['X_inference']
         model = st.session_state['model']
         selected_clusters = st.session_state['categories']
 
@@ -45,16 +50,17 @@ def app():
         # Explaining the model's predictions using SHAP values
         # https://github.com/slundberg/shap
         explainer = shap.TreeExplainer(model)
-        shap_values = explainer.shap_values(X_train)
+        shap_values = explainer.shap_values(X_inference)
+        
 
         st.header('Feature Importance')
         plt.title('Feature importance based on SHAP values')
-        shap.summary_plot(shap_values, X_train)
+        shap.summary_plot(shap_values, X_inference)
         st.pyplot(bbox_inches='tight')
         st.write('---')
 
         plt.title('Feature importance based on SHAP values (Bar)')
-        shap.summary_plot(shap_values, X_train, plot_type="bar")
+        shap.summary_plot(shap_values, X_inference, plot_type="bar")
         st.pyplot(bbox_inches='tight')
 
     if st.button('Graph'):

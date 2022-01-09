@@ -3,6 +3,7 @@ import pandas as pd
 import pickle
 import lightgbm as lgb
 import matplotlib.pyplot as plt
+from PIL import Image
 
 
 def app():
@@ -19,6 +20,9 @@ def app():
     一旦、csvから読み込む
     """)
 
+    image = Image.open('ML_input_next_1month.png')
+    st.image(image, width=500)
+
     # # Collects user input features into dataframe
     # uploaded_file = st.sidebar.file_uploader(
     #     "Upload your input CSV file", type=["csv"])
@@ -29,6 +33,7 @@ def app():
         st.write("Using all clustering for model creation")
     else:
         df = st.session_state['ML_df']
+        df_time = st.session_state['df_time']
         selected_learning_col = st.session_state['learning_col']
 
         # Sidebar - 目的変数以外のカラムで、モデル生成に使う特徴量を選ぶ
@@ -48,6 +53,7 @@ def app():
             sorted_clusters)
 
         # Sidebar - Model Selector
+        st.sidebar.subheader("ML Model and Prediction Period")
         MODELS = {
             "Light GBM": 0,
             "SARIMA": 1,
@@ -55,6 +61,8 @@ def app():
             "Prophet": 3
         }
         mdl = st.sidebar.radio("Select ML Models", MODELS)
+        from_period = st.sidebar.slider('From when (incl.)', 1, 100, 1)
+        to_period = st.sidebar.slider('To when (incl.)', 1, 100, 4)
 
         # Sidebar - Optuna
         st.sidebar.subheader("Tuning Hyper Parameters")
@@ -87,30 +95,58 @@ def app():
                 'importance_type': 'split'
             }
             return params
+        def shift_df(_df, n_shift):
+            _df["shifted_count"] = _df.groupby([_df.columns[0]]).shift(-n_shift).rolling(
+            1)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
+            return _df
 
         # カテゴリカル化が済んでいることが先へ進む条件
         if st.button('Create Model'):
             if mdl == 'Light GBM':
-                df_modeling = df[df[selected_learning_col].isin(
+                # 図の通り、　
+                # ①countをto_period分シフトする
+                # ②to_period分のデータを捨てる：すなわち df_time.tail(to_period) を落としてinner join
+                # ③捨てた部分を推論用に次のセッションへ送る
+                
+                # ①シフトする
+                df_modeling = shift_df(df, to_period)
+                # ②学習期間のdfを切り出す
+                df_train = pd.merge(df_modeling, df_time[:-to_period], how='inner')
+                # 学習対象を選ばれしクラスタのみにする
+                df_train = df_train[df_train[selected_learning_col].isin(
                     selected_clusters)]
-                X_train, y_train = df_modeling[selected_features], df_modeling.iloc[:, 3]
-                st.write(X_train)
-                st.session_state['X_train'] = X_train
-
+                # ③推論期間のdfを切り出す。推論対象は選択外のクラスタに対しても実施する可能性を残す。
+                df_inference = pd.merge(df_modeling, df_time.tail(to_period), how='inner')[selected_features]
+                
+                st.write('X_train')
+                X_train, y_train = df_train[selected_features], df_train["shifted_count"]
+                st.write(X_train.columns.to_list())
+                
                 params = set_params()
                 model = lgb.LGBMRegressor(**params)
                 model.fit(X_train, y_train)
                 st.session_state['model'] = model
                 with open('test.pickle', mode='wb') as f:  # with構文でファイルパスとバイナリ書き込みモードを設定
-                    pickle.dump(model, f)
+                    dic = {'model': model,
+                            'X': df_inference,
+                            'from': from_period,
+                            'to': to_period,
+                            'categories': selected_clusters
+                            }
+                    pickle.dump(dic, f)
                 st.write('pickle has been created')
 
                 st.session_state['categories'] = selected_clusters
+                st.session_state['X_inference'] = df_inference
+                st.session_state['from_period'] = from_period
+                st.session_state['to_period'] = to_period
             else:
                 st.write("Not implemented yet...")
         else:
             st.write('Select Feature Columns and Learning Scope.')
-            df_modeling = df[df[selected_learning_col].isin(selected_clusters)]
-            X_train, y_train = df_modeling[selected_features], df_modeling.iloc[:, 3]
-            st.session_state['X_train'] = X_train
+            df_modeling = shift_df(df, to_period)
+            df_inference = pd.merge(df_modeling, df_time.tail(to_period), how='inner')[selected_features]
             st.session_state['categories'] = selected_clusters
+            st.session_state['X_inference'] = df_inference
+            st.session_state['from_period'] = from_period
+            st.session_state['to_period'] = to_period
