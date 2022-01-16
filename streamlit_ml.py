@@ -16,7 +16,7 @@ PAGES = {
     "App1. クラスタリング": streamlit_lab,
     "App2. データ入力と加工": streamlit_lab2,
     "App3. 学習": streamlit_lab3,
-    "App4. 推論と可視化": streamlit_lab4,
+    "App4. 推論と可視化・モデルの比較": streamlit_lab4,
 }
 st.sidebar.title('Navigation')
 st.sidebar.markdown("""

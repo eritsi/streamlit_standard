@@ -98,13 +98,22 @@ def app():
 
     # Plot by Dendrogram cluster
     if st.button('Plot by dendrogram cluster'):
+        #---------------------------------#
+        # Page layout (continued)
+        # Divide page to 3 columns (col1 = sidebar, col2 and col3 = page contents)
+        col1, col2 = st.columns((0.97, 1))
+
         st.subheader('Cluster Plot')
         # Time-History Plot by clusters (Normalized)
         normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
                                (pivot_df.T.max() - pivot_df.T.min())).T
         for c in set(cluster_dict.values()):
-            fig = plot_line_or_band(normalized_pivot_df, cluster_dict, c)
-            st.pyplot(fig)
+            with col1:
+                fig = plot_line_or_band(normalized_pivot_df, cluster_dict, c)
+                col1.pyplot(fig)
+            # with col2:
+            #     fig2 = plot_line_or_band(pivot_df, cluster_dict, c)
+            #     col2.pyplot(fig2)
 
     # Clustering for other items with short time-history
     if st.button('clustering for shorter TH items'):

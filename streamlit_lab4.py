@@ -122,3 +122,4 @@ def app():
             # App4とりあえず、を可変に差し替え
             # App1のクラスタリングを引き継ぐやり方
             # id選んで一個ずつy_true, y_predを表示させる
+            # important ids の対応

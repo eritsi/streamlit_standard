@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-
+from PIL import Image
 
 def app():
     st.title('demand model creator')
@@ -20,13 +20,18 @@ def app():
     uploaded_file = st.sidebar.file_uploader(
         "Upload your input CSV file", type=["csv"])
     st.sidebar.markdown("""
-    想定データフォーマット
+    想定データフォーマット  
+    - Featureカラム数は任意  
+    - カテゴリカル情報を読込  
 
     |  id  |  T1  |  T2  |  count  |  F1  |  F2  |  F3  |
     | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
     |  JAN等  |  Year等  |  Month[1-12], Week[1-53], Day[1-366]等  |  目的変数  |  特徴量1  |  特徴量2  |  特徴量3  |
 
     """)
+
+    image = Image.open('st_app2.png')
+    st.image(image, width=500)
 
     df = None
     if 'ML_df' not in st.session_state:

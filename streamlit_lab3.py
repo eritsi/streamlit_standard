@@ -20,7 +20,7 @@ def app():
     一旦、csvから読み込む
     """)
 
-    image = Image.open('ML_input_next_1month.png')
+    image = Image.open('st_app3.png')
     st.image(image, width=500)
 
     # # Collects user input features into dataframe
@@ -39,9 +39,13 @@ def app():
         # Sidebar - 目的変数以外のカラムで、モデル生成に使う特徴量を選ぶ
         # 全選択からドロップしていく方法だとエラーが出る。おそらくsession_state関係
         # sorted_features = sorted(df.columns)
-        sorted_features = sorted(list(set(df.columns) - set(df.columns[3:4])))
+        # sorted_features = sorted(list(set(df.columns) - set(df.columns[3:4]))) # - set("shifted_count")
+        sorted_features = df.columns.to_list()
+        st.write(sorted_features.pop(3))
+        # try: sorted_features.remove('shifted_count')
         selected_features = st.sidebar.multiselect(
             'Select Features for ML Model',
+            sorted_features,
             sorted_features)
 
         # Sidebar - Cluster selection
@@ -98,6 +102,8 @@ def app():
         def shift_df(_df, n_shift):
             _df["shifted_count"] = _df.groupby([_df.columns[0]]).shift(-n_shift).rolling(
             1)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
+            # sorted_features.pop(-1)
+            # try: sorted_features.remove('shifted_count')
             return _df
 
         # カテゴリカル化が済んでいることが先へ進む条件

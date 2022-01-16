@@ -4,6 +4,7 @@ import numpy as np
 
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 
+plt.rcParams.update({'figure.max_open_warning': 0})
 
 def pivot_df_for_dengram(df):
     """ データフレームをピボットする（デンドログラム用）
