@@ -117,7 +117,6 @@ def app():
             st.pyplot(fig)
 
             # Remaining To Do : 
-            # shifted_countを選べないように。
             # NaNを最初に落とせば、全Feature入れておいても大丈夫そう
             # pickleから入る場合のデバッグ
             # App4とりあえず、を可変に差し替え

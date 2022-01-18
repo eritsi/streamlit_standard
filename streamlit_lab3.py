@@ -4,7 +4,7 @@ import pickle
 import lightgbm as lgb
 import matplotlib.pyplot as plt
 from PIL import Image
-
+import copy
 
 def app():
     st.title('demand model creator')
@@ -99,7 +99,8 @@ def app():
                 'importance_type': 'split'
             }
             return params
-        def shift_df(_df, n_shift):
+        def shift_df(df, n_shift):
+            _df = df.copy()
             _df["shifted_count"] = _df.groupby([_df.columns[0]]).shift(-n_shift).rolling(
             1)[_df.columns[3]].sum().reset_index()[_df.columns[3]]
             # sorted_features.pop(-1)
