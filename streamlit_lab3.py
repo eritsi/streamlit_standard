@@ -29,12 +29,12 @@ def app():
 
     if 'ML_df' not in st.session_state:
         st.write("Please go back to 2. データ入力..")
-    elif 'learning_col' not in st.session_state:
+    elif 'classification_col' not in st.session_state:
         st.write("Using all clustering for model creation")
     else:
         df = st.session_state['ML_df']
         df_time = st.session_state['df_time']
-        selected_learning_col = st.session_state['learning_col']
+        selected_classification_col = st.session_state['classification_col']
 
         # Sidebar - 目的変数以外のカラムで、モデル生成に使う特徴量を選ぶ
         # 全選択からドロップしていく方法だとエラーが出る。おそらくsession_state関係
@@ -49,7 +49,7 @@ def app():
             sorted_features)
 
         # Sidebar - Cluster selection
-        sorted_clusters = sorted(df[selected_learning_col].unique())
+        sorted_clusters = sorted(df[selected_classification_col].unique())
 
         selected_clusters = st.sidebar.multiselect(
             'Select Clusters for ML Model',
@@ -119,7 +119,7 @@ def app():
                 # ②学習期間のdfを切り出す
                 df_train = pd.merge(df_modeling, df_time[:-to_period], how='inner')
                 # 学習対象を選ばれしクラスタのみにする
-                df_train = df_train[df_train[selected_learning_col].isin(
+                df_train = df_train[df_train[selected_classification_col].isin(
                     selected_clusters)]
                 # ③推論期間のdfを切り出す。推論対象は選択外のクラスタに対しても実施する可能性を残す。
                 df_inference = pd.merge(df_modeling, df_time.tail(to_period), how='inner')[selected_features]

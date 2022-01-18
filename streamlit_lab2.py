@@ -36,8 +36,8 @@ def app():
     df = None
     if 'ML_df' not in st.session_state:
         st.session_state['ML_df'] = pd.DataFrame()
-    if 'learning_col' not in st.session_state:
-        st.session_state['learning_col'] = None
+    if 'classification_col' not in st.session_state:
+        st.session_state['classification_col'] = None
 
     def conventional_features(_df):
         # よく使われる特徴量を計算
@@ -78,7 +78,7 @@ def app():
             set(df.columns[0:3]))
 
         # Sidebar - Column selection for learning scope
-        selected_learning_col = st.sidebar.selectbox(
+        selected_classification_col = st.sidebar.selectbox(
             'Select Column to limit the learning target.',
             sorted_categoricals,
             index=3)
@@ -105,5 +105,5 @@ def app():
             st.write(df.head(40))
             st.write('DataFrame is ready. Please go to next app(3. 学習).')
             st.session_state['ML_df'] = df
-            st.session_state['learning_col'] = selected_learning_col
+            st.session_state['classification_col'] = selected_classification_col
             st.session_state['df_time'] = df.iloc[:,[1,2]].drop_duplicates()

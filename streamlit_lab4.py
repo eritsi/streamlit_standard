@@ -44,6 +44,7 @@ def app():
         X_inference = st.session_state['X_inference']
         model = st.session_state['model']
         selected_clusters = st.session_state['categories']
+        selected_classification_col = st.session_state['classification_col']
     uploaded_file = st.sidebar.file_uploader(
         "Upload your y_true CSV file", type=["csv"])
     if uploaded_file is not None:
@@ -88,7 +89,7 @@ def app():
         X_inference['client_year'] = X_inference.apply(inc_year, axis=1)
         X_inference['client_week_num'] = X_inference.apply(inc_week, axis=1)
         X_inference['product_code'] = X_inference.apply(id_pred, axis=1)
-        df_inf = pd.concat([X_inference.iloc[:, 0:3], pd.DataFrame(df_inf, columns=['sales']), X_inference[['cluster']]], axis=1)
+        df_inf = pd.concat([X_inference.iloc[:, 0:3], pd.DataFrame(df_inf, columns=['sales']), X_inference[[selected_classification_col]]], axis=1)
         st.session_state['df_inf'] = df_inf
         st.write(df_inf)
         
@@ -98,7 +99,7 @@ def app():
         df_inf = st.session_state['df_inf']
         # クラスタ毎の描写
         # 推論部分のy_trueを含んだdfと、クラスタ番号リストをjoinする
-        ML_df = pd.merge(df_true, ML_df[[ML_df.columns[0], 'cluster']].drop_duplicates())
+        ML_df = pd.merge(df_true, ML_df[[ML_df.columns[0], selected_classification_col]].drop_duplicates())
         ML_df.iloc[:, 0] = ML_df.iloc[:, 0].astype('str')
         ML_df = pd.concat([df_inf, ML_df])
         st.write(ML_df)
@@ -106,7 +107,7 @@ def app():
         # 学習期間のラストを得る
         # st.write(ML_df.iloc[:, 1:3].drop_duplicates())
         for c in sorted(selected_clusters):
-            pivot_df = pivot_df_for_dengram(ML_df[ML_df['cluster'] == c].iloc[:, 0:4])
+            pivot_df = pivot_df_for_dengram(ML_df[ML_df[selected_classification_col] == c].iloc[:, 0:4])
             # st.write(pivot_df.T)
 
             fig = plt.figure(figsize=(15, 10 / 2))
@@ -115,7 +116,7 @@ def app():
             pivot_df.T.plot(figsize=(10, 5), ax=ax)
             st.pyplot(fig)
 
-            # Remaining To Do : clusterを全部App2の選択肢へ差し替え
+            # Remaining To Do : 
             # shifted_countを選べないように。
             # NaNを最初に落とせば、全Feature入れておいても大丈夫そう
             # pickleから入る場合のデバッグ
