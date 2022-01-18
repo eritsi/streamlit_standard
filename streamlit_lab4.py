@@ -25,6 +25,7 @@ def app():
     # uploaded_file = st.sidebar.file_uploader(
     #     "Upload your input CSV file", type=["csv"])
 
+    df_true = None
     if 'model' not in st.session_state:
         pickle_file = st.sidebar.file_uploader(
             "Upload your input pickle file", type=["pickle"])
@@ -70,28 +71,47 @@ def app():
         shap.summary_plot(shap_values, X_inference, plot_type="bar")
         st.pyplot(bbox_inches='tight')
     if st.button('inference'):
-        df_inf = model.predict(X_inference)
-        # 93行目まで一旦、とりあえず
-        def inc_year(x):
-            if x['client_year'] ==2020:
-                return 2021
-        def inc_week(x):
-            if x['client_week_num'] == 50:
-                return 1
-            elif x['client_week_num'] == 51:
-                return 2
-            elif x['client_week_num'] == 52:
-                return 3
-            elif x['client_week_num'] == 53:
-                return 4
-        def id_pred(x):
-            return str(int(x['product_code'])) + '_pred'         
-        X_inference['client_year'] = X_inference.apply(inc_year, axis=1)
-        X_inference['client_week_num'] = X_inference.apply(inc_week, axis=1)
-        X_inference['product_code'] = X_inference.apply(id_pred, axis=1)
-        df_inf = pd.concat([X_inference.iloc[:, 0:3], pd.DataFrame(df_inf, columns=['sales']), X_inference[[selected_classification_col]]], axis=1)
-        st.session_state['df_inf'] = df_inf
-        st.write(df_inf)
+        if df_true is None:
+            st.write('Please upload y_true data for calendrical process.')
+        else:
+            df_inf = model.predict(X_inference)
+            # 93行目まで一旦、とりあえず
+            def inc_df(df, current_t1, current_t2, shift_by):
+                _df = df.iloc[:,[1,2]] \
+                        .drop_duplicates() \
+                        .sort_values([df.columns[1],df.columns[2]]) \
+                        .reset_index(drop=True)
+                shift_index = _df[(_df.iloc[:,0]==current_t1) & (_df.iloc[:,1]==current_t2)].index \
+                                + shift_by
+                shifted_t1=_df.iloc[shift_index.to_list()[0],0]
+                shifted_t2=_df.iloc[shift_index.to_list()[0],1]
+                st.write(shifted_t1)
+                st.write(shifted_t2)
+                return shifted_t1, shifted_t2
+            
+            inc_df(df_true, 2020, 53, 1)
+            
+            def inc_year(x):
+                if x['client_year'] ==2020:
+                    return 2021
+            def inc_week(x):
+                if x['client_week_num'] == 50:
+                    return 1
+                elif x['client_week_num'] == 51:
+                    return 2
+                elif x['client_week_num'] == 52:
+                    return 3
+                elif x['client_week_num'] == 53:
+                    return 4
+            def id_pred(x):
+                return str(int(x['product_code'])) + '_pred'         
+            # shift_t1, shift_t2 = inc_df(df_true, X_inference['client_year'], X_inference['client_week_num'], 1)
+            X_inference['client_year'] = X_inference.apply(inc_year, axis=1)
+            X_inference['client_week_num'] = X_inference.apply(inc_week, axis=1)
+            X_inference['product_code'] = X_inference.apply(id_pred, axis=1)
+            df_inf = pd.concat([X_inference.iloc[:, 0:3], pd.DataFrame(df_inf, columns=['sales']), X_inference[[selected_classification_col]]], axis=1)
+            st.session_state['df_inf'] = df_inf
+            st.write(df_inf)
         
 
     if st.button('Graph'):
@@ -118,6 +138,8 @@ def app():
 
             # Remaining To Do : 
             # NaNを最初に落とせば、全Feature入れておいても大丈夫そう
+            # 1-1, 5-8の時の挙動確認
+            # 他モデルの実装
             # pickleから入る場合のデバッグ
             # App4とりあえず、を可変に差し替え
             # App1のクラスタリングを引き継ぐやり方
