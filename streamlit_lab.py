@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import base64
-from util_ml import get_dengram, add_one_item_in_dendrogram, plot_line_or_band, pivot_df_for_dengram
+from util_ml import get_dengram, add_one_item_in_dendrogram, plot_line_or_band, pivot_df_for_dengram, datasetLoader
 
 # Download clustering result
 # https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
@@ -81,12 +81,11 @@ def app():
     SQL_input = "SELECT * \n FROM {DATASET.TABLE} \n ORDER BY {T1, T2}\n"
 
     SQL_input = st.sidebar.text_area("SQL input", SQL_input, height=150)
-    SQL_input = SQL_input.splitlines()
-    SQL_input = SQL_input[1:]
-    SQL_input = ''.join(SQL_input)
+    dataset_loader = datasetLoader()
 
     if st.sidebar.button('Send SQL'):
-        st.sidebar.write('WIP...sorry..')
+        st.sidebar.write('SQL_input')
+        st.write(dataset_loader.__sqlToDataframe(in_Lines))
 
     # Dendrogram parameters
     st.subheader('1c. Dendrogram Output')
