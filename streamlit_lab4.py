@@ -46,6 +46,8 @@ def app():
         model = st.session_state['model']
         selected_clusters = st.session_state['categories']
         selected_classification_col = st.session_state['classification_col']
+        from_period = st.session_state['from_period']
+        to_period = st.session_state['to_period']
     uploaded_file = st.sidebar.file_uploader(
         "Upload your y_true CSV file", type=["csv"])
     if uploaded_file is not None:
@@ -75,7 +77,6 @@ def app():
             st.write('Please upload y_true data for calendrical process.')
         else:
             df_inf = model.predict(X_inference)
-            # 93行目まで一旦、とりあえず
             def inc_df(df, current_t1, current_t2, shift_by):
                 _df = df.iloc[:,[1,2]] \
                         .drop_duplicates() \
@@ -85,12 +86,30 @@ def app():
                                 + shift_by
                 shifted_t1=_df.iloc[shift_index.to_list()[0],0]
                 shifted_t2=_df.iloc[shift_index.to_list()[0],1]
-                st.write(shifted_t1)
-                st.write(shifted_t2)
                 return shifted_t1, shifted_t2
+            def inference_time_convert_df(df, df_true, _from, _to): # fromは現状使ってない。5-8週モデルで確認
+                time_conv = df.iloc[:, [1,2]].drop_duplicates().sort_values([df.columns[1],df.columns[2]]).reset_index(drop=True)
+                time_conv['temp_t1'] = None
+                time_conv['temp_t2'] = None
+                for i in time_conv.index:
+                    shifted_t1, shifted_t2 = inc_df(df_true, time_conv.iloc[i, 0], time_conv.iloc[i, 1], to_period)
+                    time_conv.at[time_conv.index[i],'temp_t1'] = shifted_t1
+                    time_conv.at[time_conv.index[i],'temp_t2'] = shifted_t2
+                return time_conv
+            def id_pred(x):
+                return str(int(x[0])) + '_pred'         
             
-            inc_df(df_true, 2020, 53, 1)
+            conv_df = inference_time_convert_df(X_inference, df_true, from_period, to_period)
+            conv_df = pd.merge(X_inference.iloc[:, 0:3], conv_df)
+            conv_df.drop(conv_df.columns[[1, 2]], axis=1, inplace=True) 
+            conv_df.rename(columns={'temp_t1': X_inference.columns[1],'temp_t2': X_inference.columns[2] }, inplace=True)
+            conv_df[X_inference.columns[0]] = conv_df.apply(id_pred, axis=1)
+            # st.write(conv_df)
+            df_inf = pd.concat([conv_df, pd.DataFrame(df_inf, columns=['sales']), X_inference[[selected_classification_col]]], axis=1)
+            st.session_state['df_inf'] = df_inf
+            st.write(df_inf)
             
+            # 129行目までは、「とりあえず」時代の名残
             def inc_year(x):
                 if x['client_year'] ==2020:
                     return 2021
@@ -103,15 +122,12 @@ def app():
                     return 3
                 elif x['client_week_num'] == 53:
                     return 4
-            def id_pred(x):
-                return str(int(x['product_code'])) + '_pred'         
             # shift_t1, shift_t2 = inc_df(df_true, X_inference['client_year'], X_inference['client_week_num'], 1)
-            X_inference['client_year'] = X_inference.apply(inc_year, axis=1)
-            X_inference['client_week_num'] = X_inference.apply(inc_week, axis=1)
-            X_inference['product_code'] = X_inference.apply(id_pred, axis=1)
-            df_inf = pd.concat([X_inference.iloc[:, 0:3], pd.DataFrame(df_inf, columns=['sales']), X_inference[[selected_classification_col]]], axis=1)
-            st.session_state['df_inf'] = df_inf
-            st.write(df_inf)
+            # X_inference['client_year'] = X_inference.apply(inc_year, axis=1)
+            # X_inference['client_week_num'] = X_inference.apply(inc_week, axis=1)
+            # X_inference['product_code'] = X_inference.apply(id_pred, axis=1)
+            # df_inf = pd.concat([X_inference.iloc[:, 0:3], pd.DataFrame(df_inf, columns=['sales']), X_inference[[selected_classification_col]]], axis=1)
+            
         
 
     if st.button('Graph'):
@@ -141,7 +157,7 @@ def app():
             # 1-1, 5-8の時の挙動確認
             # 他モデルの実装
             # pickleから入る場合のデバッグ
-            # App4とりあえず、を可変に差し替え
+            # GCPから読み込み可能にする
             # App1のクラスタリングを引き継ぐやり方
             # id選んで一個ずつy_true, y_predを表示させる
             # important ids の対応
