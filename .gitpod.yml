@@ -32,7 +32,7 @@ tasks:
       export GCLOUD_PROJECT=$GCP_ID
       eval "echo -e '\nexport GCLOUD_PROJECT="$GCP_ID"' >> ~/.bashrc"
       gcloud auth application-default login
-      pip install -r requirements.txt
+      pip install -r requirements2.txt
     openMode: split-right
 vscode:
   extensions:
