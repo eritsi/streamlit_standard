@@ -76,6 +76,18 @@ def app():
         st.write(
             'Awaiting CSV file to be uploaded.')
 
+    # Access to GCP
+    st.sidebar.subheader('... Or get data by SQL')
+    SQL_input = "SELECT * \n FROM {DATASET.TABLE} \n ORDER BY {T1, T2}\n"
+
+    SQL_input = st.sidebar.text_area("SQL input", SQL_input, height=150)
+    SQL_input = SQL_input.splitlines()
+    SQL_input = SQL_input[1:]
+    SQL_input = ''.join(SQL_input)
+
+    if st.sidebar.button('Send SQL'):
+        st.sidebar.write('WIP...sorry..')
+
     # Dendrogram parameters
     st.subheader('1c. Dendrogram Output')
     selected_threshold = st.sidebar.slider(
@@ -111,9 +123,9 @@ def app():
             with col1:
                 fig = plot_line_or_band(normalized_pivot_df, cluster_dict, c)
                 col1.pyplot(fig)
-            # with col2:
-            #     fig2 = plot_line_or_band(pivot_df, cluster_dict, c)
-            #     col2.pyplot(fig2)
+            with col2:
+                fig2 = plot_line_or_band(pivot_df, cluster_dict, c)
+                col2.pyplot(fig2)
 
     # Clustering for other items with short time-history
     if st.button('clustering for shorter TH items'):
