@@ -176,3 +176,29 @@ class datasetLoader(object):
             )
         )
         return df
+        
+    # データ読み込み処理
+    def load(self, lines):
+        """SQLを実行し、dfに入れる
+        Parameters
+        ----------
+        lines : SQL文
+        Returns
+        -------
+        df : pandasのdataframeが返る
+        Examples
+        --------
+        >>> import datasetLoader
+        >>> dataset_loader = datasetLoader()
+        >>> sql = '''
+            SELECT
+              *
+            FROM
+              `bigquery-public-data.baseball.schedules`
+          '''
+        >>> df = dataset_loader.load( sql )
+        """
+        whole_dataset = []
+        whole_dataset = self.__sqlToDataframe(lines)
+
+        return whole_dataset
