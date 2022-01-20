@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import base64
 from util_ml import get_dengram, add_one_item_in_dendrogram, plot_line_or_band, pivot_df_for_dengram
+from util_ml import datasetLoader
 
 # Download clustering result
 # https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
@@ -33,6 +34,7 @@ def app():
     # Collects user input features into dataframe
     uploaded_file = st.sidebar.file_uploader(
         "Upload your input CSV file", type=["csv"])
+
     st.sidebar.markdown("""
     想定データフォーマット
 
@@ -47,10 +49,20 @@ def app():
     else:
         df = None
         df_clustering_input = None
+    
+    # # Access to GCP
+    # st.sidebar.subheader('... Or get data by SQL')
+    # SQL_input = "SELECT * \n FROM {DATASET.TABLE} \n ORDER BY {T1, T2}\n"
+
+    # SQL_input = st.sidebar.text_area("SQL input", SQL_input, height=150)
+    # dataset_loader = datasetLoader()
+
+    # if st.sidebar.button('Send SQL'):
+    #     df = dataset_loader.load(SQL_input)
 
     # Displays full user input dataframe
     st.subheader('1a. User Input')
-    if uploaded_file is not None:
+    if (uploaded_file is not None) | (df is not None):
         st.write('Data Dimension: {} items and data '.format(len(df.iloc[:, 0].unique())) +
                  'from {}.{}'.format(min(df.iloc[:, 1]), min(df[(df.iloc[:, 1] == min(df.iloc[:, 1]))].iloc[:, 2])) +
                  ' to {}.{}.'.format(max(df.iloc[:, 1]), max(df[(df.iloc[:, 1] == max(df.iloc[:, 1]))].iloc[:, 2])) +
@@ -63,7 +75,7 @@ def app():
 
     # Displays only the longest time-history items
     st.subheader('1b. Clustering Input (Only full length items)')
-    if uploaded_file is not None:
+    if (uploaded_file is not None) | (df is not None):
         df_clustering_input = (df.iloc[:, 0].value_counts() == max(
             df.groupby(df.columns[0]).size()))
         df_clustering_input = df[(df.iloc[:, 0]).isin(
@@ -76,24 +88,12 @@ def app():
         st.write(
             'Awaiting CSV file to be uploaded.')
 
-    # Access to GCP
-    st.sidebar.subheader('... Or get data by SQL')
-    SQL_input = "SELECT * \n FROM {DATASET.TABLE} \n ORDER BY {T1, T2}\n"
-
-    SQL_input = st.sidebar.text_area("SQL input", SQL_input, height=150)
-    SQL_input = SQL_input.splitlines()
-    SQL_input = SQL_input[1:]
-    SQL_input = ''.join(SQL_input)
-
-    if st.sidebar.button('Send SQL'):
-        st.sidebar.write('WIP...sorry..')
-
     # Dendrogram parameters
     st.subheader('1c. Dendrogram Output')
     selected_threshold = st.sidebar.slider(
         'Dendrogram threshold', 0.0, 1.0, 0.17)
 
-    if uploaded_file is not None:
+    if (uploaded_file is not None) | (df is not None):
         pivot_df = pivot_df_for_dengram(df_clustering_input)
         cluster_dict, fig = get_dengram(pivot_df, selected_threshold)
         st.pyplot(fig)
