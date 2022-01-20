@@ -100,7 +100,8 @@ def app():
     if st.button('Plot by dendrogram cluster'):
         #---------------------------------#
         # Page layout (continued)
-        # Divide page to 3 columns (col1 = sidebar, col2 and col3 = page contents)
+        # Divide page to 3 columns (col1 = sidebar, col2 and col3 = page
+        # contents)
         col1, col2 = st.columns((0.97, 1))
 
         st.subheader('Cluster Plot')
