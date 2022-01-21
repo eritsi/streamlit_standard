@@ -46,6 +46,7 @@ def app():
 
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
+        st.session_state['input_df'] = df 
     else:
         df = None
         df_clustering_input = None
@@ -59,10 +60,12 @@ def app():
 
     if st.sidebar.button('Send SQL'):
         df = dataset_loader.load(SQL_input)
+        st.session_state['input_df'] = df
 
     # Displays full user input dataframe
     st.subheader('1a. User Input')
-    if (uploaded_file is not None) | (df is not None):
+    if (uploaded_file is not None) | ('input_df' in st.session_state):
+        df = st.session_state['input_df']
         st.write('Data Dimension: {} items and data '.format(len(df.iloc[:, 0].unique())) +
                  'from {}.{}'.format(min(df.iloc[:, 1]), min(df[(df.iloc[:, 1] == min(df.iloc[:, 1]))].iloc[:, 2])) +
                  ' to {}.{}.'.format(max(df.iloc[:, 1]), max(df[(df.iloc[:, 1] == max(df.iloc[:, 1]))].iloc[:, 2])) +
@@ -75,7 +78,8 @@ def app():
 
     # Displays only the longest time-history items
     st.subheader('1b. Clustering Input (Only full length items)')
-    if (uploaded_file is not None) | (df is not None):
+    if (uploaded_file is not None) | ('input_df' in st.session_state):
+        df = st.session_state['input_df']
         df_clustering_input = (df.iloc[:, 0].value_counts() == max(
             df.groupby(df.columns[0]).size()))
         df_clustering_input = df[(df.iloc[:, 0]).isin(
@@ -93,7 +97,8 @@ def app():
     selected_threshold = st.sidebar.slider(
         'Dendrogram threshold', 0.0, 1.0, 0.17)
 
-    if (uploaded_file is not None) | (df is not None):
+    if (uploaded_file is not None) | ('input_df' in st.session_state):
+        df = st.session_state['input_df']
         pivot_df = pivot_df_for_dengram(df_clustering_input)
         cluster_dict, fig = get_dengram(pivot_df, selected_threshold)
         st.pyplot(fig)
