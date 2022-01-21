@@ -60,7 +60,7 @@ def app():
     if st.sidebar.button('Send SQL'):
         df = dataset_loader.load(SQL_input)
 
-    Displays full user input dataframe
+    # Displays full user input dataframe
     st.subheader('1a. User Input')
     if (uploaded_file is not None) | (df is not None):
         st.write('Data Dimension: {} items and data '.format(len(df.iloc[:, 0].unique())) +
