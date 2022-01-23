@@ -1,10 +1,18 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import base64
 
 from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 
 plt.rcParams.update({'figure.max_open_warning': 0})
+
+def filedownload(df):
+    csv = df.to_csv(index=False, encoding='utf-8_sig')
+    # strings <-> bytes conversions
+    b64 = base64.b64encode(csv.encode()).decode()
+    href = f'<a href="data:file/csv;base64,{b64}" download="clustering.csv">Download CSV File</a>'
+    return href
 
 def pivot_df_for_dengram(df):
     """ データフレームをピボットする（デンドログラム用）

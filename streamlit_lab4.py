@@ -4,8 +4,8 @@ import shap
 import pickle
 import lightgbm as lgb
 import matplotlib.pyplot as plt
-from util_ml import pivot_df_for_dengram
-
+from util_ml import pivot_df_for_dengram, filedownload
+from util_ml import datasetLoader
 
 def app():
     st.title('demand visualizer')
@@ -51,8 +51,18 @@ def app():
     uploaded_file = st.sidebar.file_uploader(
         "Upload your y_true CSV file", type=["csv"])
     if uploaded_file is not None:
-        st.subheader('Display csv Inputs')
         df_true = pd.read_csv(uploaded_file)
+
+    # Access to GCP
+    st.sidebar.subheader('... Or get data by SQL')
+    SQL_input = "SELECT * \n FROM {DATASET.TABLE} \n ORDER BY {T1, T2}\n"
+
+    SQL_input = st.sidebar.text_area("SQL input", SQL_input, height=150)
+    dataset_loader = datasetLoader()
+
+    if st.sidebar.button('Send SQL'):
+        df_true = dataset_loader.load(SQL_input)
+        st.session_state['df_true'] = df_true
 
     if st.button('SHAP'):
         st.set_option('deprecation.showPyplotGlobalUse', False)
@@ -73,6 +83,8 @@ def app():
         shap.summary_plot(shap_values, X_inference, plot_type="bar")
         st.pyplot(bbox_inches='tight')
     if st.button('inference'):
+        if 'df_true' in st.session_state:
+            df_true = st.session_state['df_true']
         if df_true is None:
             st.write('Please upload y_true data for calendrical process.')
         else:
@@ -98,14 +110,14 @@ def app():
                 return time_conv
             def id_pred(x):
                 return str(int(x[0])) + '_pred'         
-            
+
             conv_df = inference_time_convert_df(X_inference, df_true, from_period, to_period)
             conv_df = pd.merge(X_inference.iloc[:, 0:3], conv_df)
             conv_df.drop(conv_df.columns[[1, 2]], axis=1, inplace=True) 
             conv_df.rename(columns={'temp_t1': X_inference.columns[1],'temp_t2': X_inference.columns[2] }, inplace=True)
             conv_df[X_inference.columns[0]] = conv_df.apply(id_pred, axis=1)
             # st.write(conv_df)
-            df_inf = pd.concat([conv_df, pd.DataFrame(df_inf, columns=['sales']), X_inference[[selected_classification_col]]], axis=1)
+            df_inf = pd.concat([conv_df, pd.DataFrame(df_inf, columns=[df_true.columns[3]]), X_inference[[selected_classification_col]]], axis=1)
             st.session_state['df_inf'] = df_inf
             st.write(df_inf)
             
@@ -131,19 +143,35 @@ def app():
         
 
     if st.button('Graph'):
-        ML_df = st.session_state['ML_df']
+        if 'df_true' in st.session_state:
+            df_true = st.session_state['df_true']
+        
+        input_df = st.session_state['input_df']
         df_inf = st.session_state['df_inf']
         # クラスタ毎の描写
         # 推論部分のy_trueを含んだdfと、クラスタ番号リストをjoinする
-        ML_df = pd.merge(df_true, ML_df[[ML_df.columns[0], selected_classification_col]].drop_duplicates())
-        ML_df.iloc[:, 0] = ML_df.iloc[:, 0].astype('str')
-        ML_df = pd.concat([df_inf, ML_df])
-        st.write(ML_df)
+        input_df = pd.merge(df_true, input_df[[input_df.columns[0], selected_classification_col]].drop_duplicates())
+        input_df.iloc[:, 0] = input_df.iloc[:, 0].astype('str')
+        input_df = pd.concat([df_inf, input_df])
+        st.write(input_df)
+        st.markdown(filedownload(input_df), unsafe_allow_html=True)
         # 推論結果をid_predとしてconcat
         # 学習期間のラストを得る
-        # st.write(ML_df.iloc[:, 1:3].drop_duplicates())
+        # st.write(input_df.iloc[:, 1:3].drop_duplicates())
+        st.subheader.write('Plots for learned clusters: ')
         for c in sorted(selected_clusters):
-            pivot_df = pivot_df_for_dengram(ML_df[ML_df[selected_classification_col] == c].iloc[:, 0:4])
+            pivot_df = pivot_df_for_dengram(input_df[input_df[selected_classification_col] == c].iloc[:, 0:4])
+            # st.write(pivot_df.T)
+
+            fig = plt.figure(figsize=(15, 10 / 2))
+            ax = fig.add_subplot(
+                1, 1, 1, title="cluster = {}".format(c))
+            pivot_df.T.plot(figsize=(10, 5), ax=ax)
+            st.pyplot(fig)
+        
+        st.subheader.write('Plots for NOT learned clusters: ')
+        for c in sorted(set(input_df['cluster'].drop_duplicates()) - set(selected_clusters)):
+            pivot_df = pivot_df_for_dengram(input_df[input_df[selected_classification_col] == c].iloc[:, 0:4])
             # st.write(pivot_df.T)
 
             fig = plt.figure(figsize=(15, 10 / 2))
@@ -152,12 +180,14 @@ def app():
             pivot_df.T.plot(figsize=(10, 5), ax=ax)
             st.pyplot(fig)
 
+
             # Remaining To Do : 
-            # NaNを最初に落とせば、全Feature入れておいても大丈夫そう
+            # テスト -------------
             # 1-1, 5-8の時の挙動確認
-            # 他モデルの実装
             # pickleから入る場合のデバッグ
-            # GCPから読み込み可能にする
-            # App1のクラスタリングを引き継ぐやり方
+            # 実装 ---------------
+            # 他モデルの実装
+            # MAPE計算追加
             # id選んで一個ずつy_true, y_predを表示させる
+            
             # important ids の対応

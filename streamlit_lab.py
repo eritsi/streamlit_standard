@@ -1,20 +1,11 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import base64
-from util_ml import get_dengram, add_one_item_in_dendrogram, plot_line_or_band, pivot_df_for_dengram
+from util_ml import get_dengram, add_one_item_in_dendrogram, plot_line_or_band, pivot_df_for_dengram, filedownload
 from util_ml import datasetLoader
 
 # Download clustering result
 # https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
-
-
-def filedownload(df):
-    csv = df.to_csv(index=False, encoding='utf-8_sig')
-    # strings <-> bytes conversions
-    b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="clustering.csv">Download CSV File</a>'
-    return href
 
 
 def app():
@@ -169,4 +160,5 @@ def app():
         st.subheader('Clustering result for all items')
         df_cluster = pd.concat([df_short_tf, df_long_tf])
         st.write(df_cluster)
+        st.session_state['input_df'] = pd.merge(df, df_cluster.iloc[:, [0,1]])
         st.markdown(filedownload(df_cluster), unsafe_allow_html=True)
