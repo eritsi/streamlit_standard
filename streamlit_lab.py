@@ -38,6 +38,8 @@ def app():
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
         st.session_state['input_df'] = df 
+        if len(df[df.iloc[:, [0,1,2]].duplicated()])>0:
+            st.error('Warning: Please check if duplicated id/T1/T2 rows exist...')
     else:
         df = None
         df_clustering_input = None
@@ -52,6 +54,8 @@ def app():
     if st.sidebar.button('Send SQL'):
         df = dataset_loader.load(SQL_input)
         st.session_state['input_df'] = df
+        if len(df[df.iloc[:, [0,1,2]].duplicated()])>0:
+            st.error('Warning: Please check if duplicated id/T1/T2 rows exist...')
 
     # Displays full user input dataframe
     st.subheader('1a. User Input')
@@ -150,7 +154,7 @@ def app():
 
         df_short_tf.rename(
             columns={
-                0: 'product_code',
+                0: df.columns[0],
                 1: 'cluster',
                 2: 'candidate_clusters',
                 3: 'colleague_counts'},
