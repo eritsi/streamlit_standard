@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import math
 import shap
 import pickle
 import lightgbm as lgb
@@ -158,7 +159,7 @@ def app():
         # 推論結果をid_predとしてconcat
         # 学習期間のラストを得る
         # st.write(input_df.iloc[:, 1:3].drop_duplicates())
-        st.subheader.write('Plots for learned clusters: ')
+        st.subheader('Plots for learned clusters: ')
         for c in sorted(selected_clusters):
             pivot_df = pivot_df_for_dengram(input_df[input_df[selected_classification_col] == c].iloc[:, 0:4])
             # st.write(pivot_df.T)
@@ -169,16 +170,16 @@ def app():
             pivot_df.T.plot(figsize=(10, 5), ax=ax)
             st.pyplot(fig)
         
-        st.subheader.write('Plots for NOT learned clusters: ')
+        st.subheader('Plots for NOT learned clusters: ')
         for c in sorted(set(input_df['cluster'].drop_duplicates()) - set(selected_clusters)):
             pivot_df = pivot_df_for_dengram(input_df[input_df[selected_classification_col] == c].iloc[:, 0:4])
             # st.write(pivot_df.T)
-
-            fig = plt.figure(figsize=(15, 10 / 2))
-            ax = fig.add_subplot(
-                1, 1, 1, title="cluster = {}".format(c))
-            pivot_df.T.plot(figsize=(10, 5), ax=ax)
-            st.pyplot(fig)
+            if not math.isnan(c):
+                fig = plt.figure(figsize=(15, 10 / 2))
+                ax = fig.add_subplot(
+                    1, 1, 1, title="cluster = {}".format(c))
+                pivot_df.T.plot(figsize=(10, 5), ax=ax)
+                st.pyplot(fig)
 
 
             # Remaining To Do : 

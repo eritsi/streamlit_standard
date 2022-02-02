@@ -35,8 +35,9 @@ def app():
     st.image(image, width=500)
 
     df = None
-    if 'input_df' not in st.session_state:
-        st.session_state['input_df'] = pd.DataFrame()
+    uploaded_file = None
+    # if 'input_df' not in st.session_state:
+    #     st.session_state['input_df'] = pd.DataFrame()
     if 'classification_col' not in st.session_state:
         st.session_state['classification_col'] = None
 
