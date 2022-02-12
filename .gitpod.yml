@@ -3,6 +3,8 @@ tasks:
     init: |
       pip install -r requirements.txt
       # cp ipaexg.ttf /home/gitpod/.pyenv/versions/3.8.12/lib/python3.8/site-packages/matplotlib/mpl-data/fonts/ttf/
+      # pip がバージョンアップされ、インストール先が変わった模様。
+      # st.write(matplotlib.matplotlib_fname()) してmatplotlibのインストール先を確認するのが良い
       cp ipaexg.ttf /workspace/.pip-modules/lib/python3.8/site-packages/matplotlib/mpl-data/fonts/ttf/
       wget https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls
       gp sync-done streamlit
