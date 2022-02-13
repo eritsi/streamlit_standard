@@ -36,6 +36,8 @@ tasks:
       eval "echo -e '\nexport GCLOUD_PROJECT="$GCP_ID"' >> ~/.bashrc"
       gcloud auth application-default login
       pip install -r requirements2.txt
+      # for firestore: https://blog.streamlit.io/streamlit-firestore/
+      pip install google-cloud-firestore
     openMode: split-right
 vscode:
   extensions:
