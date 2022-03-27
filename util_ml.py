@@ -1,3 +1,6 @@
+import os
+from google.cloud import bigquery_storage_v1beta1
+from google.cloud import bigquery
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,12 +10,14 @@ from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 
 plt.rcParams.update({'figure.max_open_warning': 0})
 
+
 def filedownload(df):
     csv = df.to_csv(index=False, encoding='utf-8_sig')
     # strings <-> bytes conversions
     b64 = base64.b64encode(csv.encode()).decode()
     href = f'<a href="data:file/csv;base64,{b64}" download="clustering.csv">Download CSV File</a>'
     return href
+
 
 def pivot_df_for_dengram(df):
     """ データフレームをピボットする（デンドログラム用）
@@ -144,7 +149,12 @@ def plot_line_or_band(pivot_df, cluster_dict, cluster):
     """
     a = []
 
-    display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+    def display_by_cluster(
+        d,
+        l,
+        a): return [
+        a.append(k) for k,
+        v in d.items() if v == l]
 
     fig = plt.figure(figsize=(15, 10 / 2))
     ax = fig.add_subplot(
@@ -153,9 +163,6 @@ def plot_line_or_band(pivot_df, cluster_dict, cluster):
     pivot_df.loc[(a), :].T.plot(figsize=(10, 5), ax=ax)
     return fig
 
-import os
-from google.cloud import bigquery
-from google.cloud import bigquery_storage_v1beta1
 
 '''
 BQデータテーブル読み込み書き込み処理プログラム
@@ -184,7 +191,7 @@ class datasetLoader(object):
             )
         )
         return df
-        
+
     # データ読み込み処理
     def load(self, lines):
         """SQLを実行し、dfに入れる
