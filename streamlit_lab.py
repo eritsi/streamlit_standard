@@ -38,13 +38,13 @@ def app():
 
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
-        st.session_state['input_df'] = df 
-        if len(df[df.iloc[:, [0,1,2]].duplicated()])>0:
+        st.session_state['input_df'] = df
+        if len(df[df.iloc[:, [0, 1, 2]].duplicated()]) > 0:
             st.error('Warning: Please check if duplicated id/T1/T2 rows exist...')
     else:
         df = None
         df_clustering_input = None
-    
+
     # Access to GCP
     st.sidebar.subheader('... Or get data by SQL')
     SQL_input = "SELECT * \n FROM {DATASET.TABLE} \n ORDER BY {T1, T2}\n"
@@ -55,7 +55,7 @@ def app():
     if st.sidebar.button('Send SQL'):
         df = dataset_loader.load(SQL_input)
         st.session_state['input_df'] = df
-        if len(df[df.iloc[:, [0,1,2]].duplicated()])>0:
+        if len(df[df.iloc[:, [0, 1, 2]].duplicated()]) > 0:
             st.error('Warning: Please check if duplicated id/T1/T2 rows exist...')
 
     # Displays full user input dataframe
@@ -120,12 +120,14 @@ def app():
         # Time-History Plot by clusters (Normalized)
         normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
                                (pivot_df.T.max() - pivot_df.T.min())).T
-        display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+
+        def display_by_cluster(d, l, a): return [
+            a.append(k) for k, v in d.items() if v == l]
 
         # for i, c in enumerate(set(cluster_dict.values())):
         for c in set(cluster_dict.values()):
             fig = plt.figure()
-            
+
             a = []
             display_by_cluster(cluster_dict, c, a)
             ax = plt.subplot(1, 2, 1)
@@ -135,7 +137,12 @@ def app():
 
             ax = plt.subplot(1, 2, 2)
             normalized_pivot_df.loc[(a), :].T.plot(figsize=(20, 5), ax=ax)
-            plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left", borderaxespad=0.)
+            plt.legend(
+                bbox_to_anchor=(
+                    1.05,
+                    1.0),
+                loc="upper left",
+                borderaxespad=0.)
 
             plt.title("Normalized Plot")
             plt.show()
@@ -186,5 +193,5 @@ def app():
         st.subheader('Clustering result for all items')
         df_cluster = pd.concat([df_short_tf, df_long_tf])
         st.write(df_cluster)
-        st.session_state['input_df'] = pd.merge(df, df_cluster.iloc[:, [0,1]])
+        st.session_state['input_df'] = pd.merge(df, df_cluster.iloc[:, [0, 1]])
         st.markdown(filedownload(df_cluster), unsafe_allow_html=True)
