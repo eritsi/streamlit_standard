@@ -1,20 +1,12 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import base64
-from util_ml import get_dengram, add_one_item_in_dendrogram, plot_line_or_band, pivot_df_for_dengram
-# from util_ml import datasetLoader
+from util_ml import get_dengram, add_one_item_in_dendrogram, plot_line_or_band, pivot_df_for_dengram, filedownload
+from util_ml import datasetLoader
+import matplotlib.pyplot as plt
 
 # Download clustering result
 # https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
-
-
-def filedownload(df):
-    csv = df.to_csv(index=False, encoding='utf-8_sig')
-    # strings <-> bytes conversions
-    b64 = base64.b64encode(csv.encode()).decode()
-    href = f'<a href="data:file/csv;base64,{b64}" download="clustering.csv">Download CSV File</a>'
-    return href
 
 
 def app():
@@ -46,23 +38,30 @@ def app():
 
     if uploaded_file is not None:
         df = pd.read_csv(uploaded_file)
+        st.session_state['input_df'] = df 
+        if len(df[df.iloc[:, [0,1,2]].duplicated()])>0:
+            st.error('Warning: Please check if duplicated id/T1/T2 rows exist...')
     else:
         df = None
         df_clustering_input = None
     
-    # # Access to GCP
-    # st.sidebar.subheader('... Or get data by SQL')
-    # SQL_input = "SELECT * \n FROM {DATASET.TABLE} \n ORDER BY {T1, T2}\n"
+    # Access to GCP
+    st.sidebar.subheader('... Or get data by SQL')
+    SQL_input = "SELECT * \n FROM {DATASET.TABLE} \n ORDER BY {T1, T2}\n"
 
-    # SQL_input = st.sidebar.text_area("SQL input", SQL_input, height=150)
-    # dataset_loader = datasetLoader()
+    SQL_input = st.sidebar.text_area("SQL input", SQL_input, height=150)
+    dataset_loader = datasetLoader()
 
-    # if st.sidebar.button('Send SQL'):
-    #     df = dataset_loader.load(SQL_input)
+    if st.sidebar.button('Send SQL'):
+        df = dataset_loader.load(SQL_input)
+        st.session_state['input_df'] = df
+        if len(df[df.iloc[:, [0,1,2]].duplicated()])>0:
+            st.error('Warning: Please check if duplicated id/T1/T2 rows exist...')
 
     # Displays full user input dataframe
     st.subheader('1a. User Input')
-    if (uploaded_file is not None) | (df is not None):
+    if (uploaded_file is not None) | ('input_df' in st.session_state):
+        df = st.session_state['input_df']
         st.write('Data Dimension: {} items and data '.format(len(df.iloc[:, 0].unique())) +
                  'from {}.{}'.format(min(df.iloc[:, 1]), min(df[(df.iloc[:, 1] == min(df.iloc[:, 1]))].iloc[:, 2])) +
                  ' to {}.{}.'.format(max(df.iloc[:, 1]), max(df[(df.iloc[:, 1] == max(df.iloc[:, 1]))].iloc[:, 2])) +
@@ -75,7 +74,8 @@ def app():
 
     # Displays only the longest time-history items
     st.subheader('1b. Clustering Input (Only full length items)')
-    if (uploaded_file is not None) | (df is not None):
+    if (uploaded_file is not None) | ('input_df' in st.session_state):
+        df = st.session_state['input_df']
         df_clustering_input = (df.iloc[:, 0].value_counts() == max(
             df.groupby(df.columns[0]).size()))
         df_clustering_input = df[(df.iloc[:, 0]).isin(
@@ -93,7 +93,8 @@ def app():
     selected_threshold = st.sidebar.slider(
         'Dendrogram threshold', 0.0, 1.0, 0.17)
 
-    if (uploaded_file is not None) | (df is not None):
+    if (uploaded_file is not None) | ('input_df' in st.session_state):
+        df = st.session_state['input_df']
         pivot_df = pivot_df_for_dengram(df_clustering_input)
         cluster_dict, fig = get_dengram(pivot_df, selected_threshold)
         st.pyplot(fig)
@@ -113,19 +114,40 @@ def app():
         #---------------------------------#
         # Page layout (continued)
         # Divide page to 3 columns (col1 = sidebar, col2 and col3 = page contents)
-        col1, col2 = st.columns((0.97, 1))
+        # col1, col2 = st.columns((0.97, 1))
 
         st.subheader('Cluster Plot')
         # Time-History Plot by clusters (Normalized)
         normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
                                (pivot_df.T.max() - pivot_df.T.min())).T
+        display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+
+        # for i, c in enumerate(set(cluster_dict.values())):
         for c in set(cluster_dict.values()):
-            with col1:
-                fig = plot_line_or_band(normalized_pivot_df, cluster_dict, c)
-                col1.pyplot(fig)
-            with col2:
-                fig2 = plot_line_or_band(pivot_df, cluster_dict, c)
-                col2.pyplot(fig2)
+            fig = plt.figure()
+            
+            a = []
+            display_by_cluster(cluster_dict, c, a)
+            ax = plt.subplot(1, 2, 1)
+            pivot_df.loc[(a), :].T.plot(figsize=(20, 5), ax=ax)
+            ax.get_legend().remove()
+            plt.title("dendrogram cluster = {}".format(c))
+
+            ax = plt.subplot(1, 2, 2)
+            normalized_pivot_df.loc[(a), :].T.plot(figsize=(20, 5), ax=ax)
+            plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left", borderaxespad=0.)
+
+            plt.title("Normalized Plot")
+            plt.show()
+            st.pyplot(fig)
+
+        # for c in set(cluster_dict.values()):
+        #     with col1:
+        #         fig = plot_line_or_band(normalized_pivot_df, cluster_dict, c)
+        #         col1.pyplot(fig)
+        #     with col2:
+        #         fig2 = plot_line_or_band(pivot_df, cluster_dict, c)
+        #         col2.pyplot(fig2)
 
     # Clustering for other items with short time-history
     if st.button('clustering for shorter TH items'):
@@ -154,7 +176,7 @@ def app():
 
         df_short_tf.rename(
             columns={
-                0: 'product_code',
+                0: df.columns[0],
                 1: 'cluster',
                 2: 'candidate_clusters',
                 3: 'colleague_counts'},
@@ -164,4 +186,5 @@ def app():
         st.subheader('Clustering result for all items')
         df_cluster = pd.concat([df_short_tf, df_long_tf])
         st.write(df_cluster)
+        st.session_state['input_df'] = pd.merge(df, df_cluster.iloc[:, [0,1]])
         st.markdown(filedownload(df_cluster), unsafe_allow_html=True)

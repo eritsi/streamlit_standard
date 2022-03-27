@@ -27,12 +27,12 @@ def app():
     # uploaded_file = st.sidebar.file_uploader(
     #     "Upload your input CSV file", type=["csv"])
 
-    if 'ML_df' not in st.session_state:
+    if 'input_df' not in st.session_state:
         st.write("Please go back to 2. データ入力..")
     elif 'classification_col' not in st.session_state:
         st.write("Using all clustering for model creation")
     else:
-        df = st.session_state['ML_df']
+        df = st.session_state['input_df']
         df_time = st.session_state['df_time']
         selected_classification_col = st.session_state['classification_col']
 

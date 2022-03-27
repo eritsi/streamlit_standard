@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from PIL import Image
+from util_ml import datasetLoader
 
 def app():
     st.title('demand model creator')
@@ -34,10 +35,22 @@ def app():
     st.image(image, width=500)
 
     df = None
-    if 'ML_df' not in st.session_state:
-        st.session_state['ML_df'] = pd.DataFrame()
+    uploaded_file = None
+    # if 'input_df' not in st.session_state:
+    #     st.session_state['input_df'] = pd.DataFrame()
     if 'classification_col' not in st.session_state:
         st.session_state['classification_col'] = None
+
+    # Access to GCP
+    st.sidebar.subheader('... Or get data by SQL')
+    SQL_input = "SELECT * \n FROM {DATASET.TABLE} \n ORDER BY {T1, T2}\n"
+
+    SQL_input = st.sidebar.text_area("SQL input", SQL_input, height=150)
+    dataset_loader = datasetLoader()
+
+    if st.sidebar.button('Send SQL'):
+        df = dataset_loader.load(SQL_input)
+        st.session_state['input_df'] = df
 
     def conventional_features(_df):
         # よく使われる特徴量を計算
@@ -63,13 +76,14 @@ def app():
     if uploaded_file is not None:
         st.subheader('Display csv Inputs')
         df = pd.read_csv(uploaded_file)
+        st.session_state['input_df'] = df
         st.write(df.head(15))
 
     else:
         st.write('Select Inputs first...')
 
-    if df is not None:
-
+    if (df is not None) | ('input_df' in st.session_state):
+        df = st.session_state['input_df']
         # Sidebar - Categorical Feature selection
         sorted_categoricals = sorted(df.columns)
         selected_categoricals = st.sidebar.multiselect(
@@ -104,6 +118,6 @@ def app():
             st.subheader('Display Inputs for ML Model')
             st.write(df.head(40))
             st.write('DataFrame is ready. Please go to next app(3. 学習).')
-            st.session_state['ML_df'] = df
+            st.session_state['input_df'] = df
             st.session_state['classification_col'] = selected_classification_col
             st.session_state['df_time'] = df.iloc[:,[1,2]].drop_duplicates()
