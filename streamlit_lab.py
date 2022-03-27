@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from util_ml import get_dengram, add_one_item_in_dendrogram, plot_line_or_band, pivot_df_for_dengram, filedownload
 from util_ml import datasetLoader
+import matplotlib.pyplot as plt
 
 # Download clustering result
 # https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
@@ -113,19 +114,40 @@ def app():
         #---------------------------------#
         # Page layout (continued)
         # Divide page to 3 columns (col1 = sidebar, col2 and col3 = page contents)
-        col1, col2 = st.columns((0.97, 1))
+        # col1, col2 = st.columns((0.97, 1))
 
         st.subheader('Cluster Plot')
         # Time-History Plot by clusters (Normalized)
         normalized_pivot_df = ((pivot_df.T - pivot_df.T.min()) /
                                (pivot_df.T.max() - pivot_df.T.min())).T
+        display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+
+        # for i, c in enumerate(set(cluster_dict.values())):
         for c in set(cluster_dict.values()):
-            with col1:
-                fig = plot_line_or_band(normalized_pivot_df, cluster_dict, c)
-                col1.pyplot(fig)
-            with col2:
-                fig2 = plot_line_or_band(pivot_df, cluster_dict, c)
-                col2.pyplot(fig2)
+            fig = plt.figure()
+            
+            a = []
+            display_by_cluster(cluster_dict, c, a)
+            ax = plt.subplot(1, 2, 1)
+            pivot_df.loc[(a), :].T.plot(figsize=(20, 5), ax=ax)
+            ax.get_legend().remove()
+            plt.title("dendrogram cluster = {}".format(c))
+
+            ax = plt.subplot(1, 2, 2)
+            normalized_pivot_df.loc[(a), :].T.plot(figsize=(20, 5), ax=ax)
+            plt.legend(bbox_to_anchor=(1.05, 1.0), loc="upper left", borderaxespad=0.)
+
+            plt.title("Normalized Plot")
+            plt.show()
+            st.pyplot(fig)
+
+        # for c in set(cluster_dict.values()):
+        #     with col1:
+        #         fig = plot_line_or_band(normalized_pivot_df, cluster_dict, c)
+        #         col1.pyplot(fig)
+        #     with col2:
+        #         fig2 = plot_line_or_band(pivot_df, cluster_dict, c)
+        #         col2.pyplot(fig2)
 
     # Clustering for other items with short time-history
     if st.button('clustering for shorter TH items'):
