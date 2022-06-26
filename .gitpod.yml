@@ -2,9 +2,11 @@ tasks:
   - name: install google-cloud-sdk & gcloud configs
     init: |
       pip install -r requirements.txt
-      cp ipaexg.ttf /home/gitpod/.pyenv/versions/3.8.12/lib/python3.8/site-packages/matplotlib/mpl-data/fonts/ttf/
-      # pip がバージョンアップされ、インストール先が変わった模様。
-      # st.write(matplotlib.matplotlib_fname()) してmatplotlibのインストール先を確認するのが良い
+      pip install jupytext openpyxl optuna pandas_gbq scikit-learn lightgbm
+      PY_VERSION=$(python -V| awk '{l=$2} END {print l}')
+      cp ipaexg.ttf /home/gitpod/.pyenv/versions/$PY_VERSION/lib/python3.8/site-packages/matplotlib/mpl-data/fonts/ttf/
+      # pip がバージョンアップされ、インストール先が変わるのについて行く方式に変更。
+      # st.write(matplotlib.matplotlib_fname()) してmatplotlibのインストール先を確認できる
       # cp ipaexg.ttf /workspace/.pip-modules/lib/python3.8/site-packages/matplotlib/mpl-data/fonts/ttf/
       wget https://www.jpx.co.jp/markets/statistics-equities/misc/tvdivq0000001vg2-att/data_j.xls
       gp sync-done streamlit
@@ -16,7 +18,6 @@ tasks:
   - name: jupyter notebook run
     init: |
       gp sync-await streamlit
-      pip install jupytext openpyxl optuna pandas_gbq scikit-learn lightgbm
       jupyter notebook --generate-config
       echo -e '\nc.NotebookApp.contents_manager_class = "jupytext.TextFileContentsManager"' >> ~/.jupyter/jupyter_notebook_config.py
       echo -e '\nc.ContentsManager.default_jupytext_formats = "ipynb,py"' >> ~/.jupyter/jupyter_notebook_config.py
