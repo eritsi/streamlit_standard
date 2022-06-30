@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 
+
 def app():
     st.title('demand model creator')
     st.markdown("""
@@ -20,9 +21,9 @@ def app():
     uploaded_file = st.sidebar.file_uploader(
         "Upload your input CSV file", type=["csv"])
     st.sidebar.markdown("""
-    想定データフォーマット  
-    - Featureカラム数は任意  
-    - カテゴリカル情報を読込  
+    想定データフォーマット
+    - Featureカラム数は任意
+    - カテゴリカル情報を読込
 
     |  id  |  T1  |  T2  |  count  |  F1  |  F2  |  F3  |
     | ---- | ---- | ---- | ---- | ---- | ---- | ---- |
@@ -106,4 +107,4 @@ def app():
             st.write('DataFrame is ready. Please go to next app(3. 学習).')
             st.session_state['ML_df'] = df
             st.session_state['classification_col'] = selected_classification_col
-            st.session_state['df_time'] = df.iloc[:,[1,2]].drop_duplicates()
+            st.session_state['df_time'] = df.iloc[:, [1, 2]].drop_duplicates()
