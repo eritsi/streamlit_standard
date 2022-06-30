@@ -9,6 +9,9 @@ streamlit run example_dp/compiled_app.py
 ## libraries_streamlit
 - 組織健康診断のダッシュボード
 https://got-streamlit.herokuapp.com/
+  - 移動してた
+  https://share.streamlit.io/mario-vishal/game_of_thrones_analysis/app.py
+  https://github.com/Mario-Vishal/Game_Of_Thrones_Analysis
 - 画像(顔)をコミック化
 https://share.streamlit.io/nathannguyen-dev/comic_me_v1/main.py
 - 画像を絵画風に
@@ -21,7 +24,9 @@ https://share.streamlit.io/discdiver/data-viz-streamlit/main/app.py
 https://evo-algorithm-playground.herokuapp.com/
 - Prophet
 https://share.streamlit.io/giandata/forecast-app/forecastapp.py  
+
 https://share.streamlit.io/maximelutel/streamlit_prophet/main/streamlit_prophet/app/dashboard.py
+https://github.com/artefactory/streamlit_prophet
 - 画像認識の全て
 https://traingenerator.jrieke.com/
 - GeoMap
@@ -32,6 +37,13 @@ https://share.streamlit.io/annasajkh/pianogpt/main/main.py
 https://share.streamlit.io/59er/eng_la_web_demo/eng_main_la_demo_app.py
 - 統計勉強用
 https://share.streamlit.io/harmkenn/python-stat-tools/main/app.py
+https://github.com/harmkenn/python-stat-tools
+- ABテスト
+https://share.streamlit.io/streamlit/example-app-ab-testing/main
+https://github.com/streamlit/example-app-ab-testing
+- BERT
+https://share.streamlit.io/streamlit/example-app-bert-keyword-extractor/main/app.py
+https://github.com/streamlit/example-app-bert-keyword-extractor
 
 ## 複数のAppをまとめる
 https://medium.com/@u.praneel.nihar/building-multi-page-web-app-using-streamlit-7a40d55fa5b4  
