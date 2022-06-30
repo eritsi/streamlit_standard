@@ -49,7 +49,7 @@ def app():
     else:
         df = None
         df_clustering_input = None
-    
+
     # # Access to GCP
     # st.sidebar.subheader('... Or get data by SQL')
     # SQL_input = "SELECT * \n FROM {DATASET.TABLE} \n ORDER BY {T1, T2}\n"
@@ -112,7 +112,8 @@ def app():
     if st.button('Plot by dendrogram cluster'):
         #---------------------------------#
         # Page layout (continued)
-        # Divide page to 3 columns (col1 = sidebar, col2 and col3 = page contents)
+        # Divide page to 3 columns (col1 = sidebar, col2 and col3 = page
+        # contents)
         col1, col2 = st.columns((0.97, 1))
 
         st.subheader('Cluster Plot')
