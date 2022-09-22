@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import base64
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 import seaborn as sns
 import numpy as np
 import yfinance as yf
@@ -24,7 +25,7 @@ st.sidebar.header('User Input Features')
 
 @st.cache
 def load_data():
-    pages = range(1557, 1644)
+    pages = range(1562, 1644)
     df = pd.DataFrame()
 
     for page in pages:

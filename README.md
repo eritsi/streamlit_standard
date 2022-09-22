@@ -62,6 +62,3 @@ https://relaxing-living-life.com/114/
 機関投資家（institutional holders）
 など
 ```
-
-### JPX_yfinaceのWIP バグ
-csvをダウンロードした時日本語が文字化ける件

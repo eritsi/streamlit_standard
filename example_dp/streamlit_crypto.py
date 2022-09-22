@@ -23,7 +23,7 @@ def app():
     #---------------------------------#
     # Title
 
-    image = Image.open('example_dp/crypto-logo.jpg')
+    image = Image.open('crypto-logo.jpg')
 
     st.image(image, width=500)
 
@@ -64,7 +64,7 @@ def app():
         data = soup.find('script', id='__NEXT_DATA__', type='application/json')
         coins = {}
         coin_data = json.loads(data.contents[0])
-        listings = coin_data['props']['initialState']['cryptocurrency']['listingLatest']['data']
+        listings = json.loads(coin_data['props']['initialState'])['cryptocurrency']['listingLatest']['data']
         listings[0]['keysArr'].append('unknown')
         df = pd.DataFrame(listings[2:], columns=listings[0]['keysArr'])
         df = df.filter(items = ['slug',

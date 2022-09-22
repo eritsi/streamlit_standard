@@ -5,9 +5,9 @@ from PIL import Image
 
 
 def app():
-    image = Image.open('example_dp/dna-logo.jpg')
+    image = Image.open('dna-logo.jpg')
 
-    st.image(image, use_column_width=True)
+    st.image(image, width=500)
 
     st.write("""
     # DNA Nucleotide Count Web App
