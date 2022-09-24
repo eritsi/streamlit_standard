@@ -8,12 +8,15 @@ from sklearn.tree import plot_tree
 from sklearn import tree
 
 # https://discuss.streamlit.io/t/how-to-download-file-in-streamlit/1806
+
+
 def filedownload(df):
     csv = df.to_csv(index=False, encoding='utf-8_sig')
     # strings <-> bytes conversions
     b64 = base64.b64encode(csv.encode()).decode()
     href = f'<a href="data:file/csv;base64,{b64}" download="clustering.csv">Download CSV File</a>'
     return href
+
 
 st.title('分析木のお試しサイト')
 st.markdown("""
@@ -42,12 +45,14 @@ if uploaded_file is not None:
 else:
     df = None
 
+
 def my_desicion_tree(dfx, dfy):
     fig, ax = plt.subplots()
     model = tree.DecisionTreeClassifier(max_depth=2, random_state=1)
     model.fit(dfx, dfy)
-    plot_tree(model, feature_names=dfx.columns, class_names=True, filled=True) 
+    plot_tree(model, feature_names=dfx.columns, class_names=True, filled=True)
     return fig
+
 
 if uploaded_file is not None:
     st.subheader('分析木')
