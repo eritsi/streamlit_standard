@@ -3,10 +3,12 @@ import pandas as pd
 
 # Dummy data for USD, EUR, and JPY
 df = pd.read_csv('dummy.csv')
-df = df[df['Currency']=='USD']
+df = df[df['Currency'] == 'USD']
+
 
 def add_MA(df, window=3):
     df['Moving_Average'] = df['Price'].rolling(window).mean()
+
 
 def add_MACD(df):
     # Calculate the 26-day exponential moving average of the Price column
@@ -24,9 +26,11 @@ def add_MACD(df):
     # Calculate the histogram by subtracting the signal line from the MACD line
     df['MACD_Histogram'] = df['MACD_Line'] - df['Signal_Line']
 
-    # Reset the index of the dataframe to ensure the MACD data is correctly aligned with the original data
+    # Reset the index of the dataframe to ensure the MACD data is correctly
+    # aligned with the original data
     df = df.reset_index(drop=True)
     return df
+
 
 df = add_MA(df, 3)
 df = add_MACD(df)

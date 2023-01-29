@@ -150,11 +150,13 @@ def price_plot(code, company):
     fig = px.line(df, x='Date', y='Close', title='{}/{}'.format(code, company))
     return st.plotly_chart(fig)
 
+
 def usdjpy_plot():
     df = pd.DataFrame(usdjpy.Close)
     df['Date'] = df.index
     fig = px.line(df, x='Date', y='Close', title='usdjpy')
     return st.plotly_chart(fig)
+
 
 num_company = st.sidebar.slider('Number of Companies', 1, 30)
 
@@ -165,7 +167,7 @@ if st.button('Show Plots'):
                     list(df_selected_sector.company)[:num_company]):
         price_plot(i, j)
 
-## yahooo finance ライブラリが動かなくなったら、以下の書き方もある
+# yahooo finance ライブラリが動かなくなったら、以下の書き方もある
 # import pandas_datareader as pdr
 # pair='USDJPY=X' #AUDJPY=X USDJPY=X EURJPY=X
 # data = pdr.DataReader(pair, 'yahoo', end='2021-07-10', start='2021-07-04')
