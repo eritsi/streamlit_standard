@@ -6,6 +6,7 @@ from scipy.cluster.hierarchy import dendrogram, linkage, fcluster
 
 plt.rcParams.update({'figure.max_open_warning': 0})
 
+
 def pivot_df_for_dengram(df):
     """ データフレームをピボットする（デンドログラム用）
         Parameters
@@ -136,7 +137,12 @@ def plot_line_or_band(pivot_df, cluster_dict, cluster):
     """
     a = []
 
-    display_by_cluster = lambda d,l,a:[a.append(k) for k,v in d.items() if v==l]
+    def display_by_cluster(
+        d,
+        l,
+        a): return [
+        a.append(k) for k,
+        v in d.items() if v == l]
 
     fig = plt.figure(figsize=(15, 10 / 2))
     ax = fig.add_subplot(
@@ -176,7 +182,7 @@ def plot_line_or_band(pivot_df, cluster_dict, cluster):
 #             )
 #         )
 #         return df
-        
+
 #     # データ読み込み処理
 #     def load(self, lines):
 #         """SQLを実行し、dfに入れる
