@@ -20,4 +20,5 @@ statsmodels
 seaborn
 japanize_matplotlib
 httpx_oauth
+plotly
 protobuf==3.20.0 # due to the following error https://stackoverflow.com/questions/72441758/typeerror-descriptors-cannot-not-be-created-directly/72493690#72493690
