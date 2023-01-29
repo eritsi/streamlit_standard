@@ -1,13 +1,14 @@
 import streamlit as st
 import pandas as pd
 import base64
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import japanize_matplotlib
 import seaborn as sns
 import numpy as np
 import yfinance as yf
+import plotly.express as px
 
-plt.rcParams['font.family'] = 'IPAexGothic'
+# plt.rcParams['font.family'] = 'IPAexGothic'
 
 st.title('JPX App')
 
@@ -117,26 +118,54 @@ data = yf.download(
     proxy=None
 )
 
+usdjpy = yf.download(
+    tickers='USDJPY=X',
+    period="ytd",
+    interval="1d",
+    group_by='ticker',
+    auto_adjust=True,
+    prepost=True,
+    threads=True,
+    proxy=None
+)
+
 # # Plot Closing Price of Query Symbol
 
+
+# def price_plot(code, company):
+#     df = pd.DataFrame(data[code].Close)
+#     df['Date'] = df.index
+#     f, ax = plt.subplots(figsize=(7, 5))
+#     plt.fill_between(df.Date, df.Close, color='skyblue', alpha=0.3)
+#     plt.plot(df.Date, df.Close, color='skyblue', alpha=0.8)
+#     plt.xticks(rotation=90)
+#     plt.title('{}/{}'.format(code, company), fontweight='bold')
+#     plt.xlabel('Date', fontweight='bold')
+#     plt.ylabel('Closing Price', fontweight='bold')
+#     return st.pyplot(f)
 
 def price_plot(code, company):
     df = pd.DataFrame(data[code].Close)
     df['Date'] = df.index
-    f, ax = plt.subplots(figsize=(7, 5))
-    plt.fill_between(df.Date, df.Close, color='skyblue', alpha=0.3)
-    plt.plot(df.Date, df.Close, color='skyblue', alpha=0.8)
-    plt.xticks(rotation=90)
-    plt.title('{}/{}'.format(code, company), fontweight='bold')
-    plt.xlabel('Date', fontweight='bold')
-    plt.ylabel('Closing Price', fontweight='bold')
-    return st.pyplot(f)
+    fig = px.line(df, x='Date', y='Close', title='{}/{}'.format(code, company))
+    return st.plotly_chart(fig)
 
+def usdjpy_plot():
+    df = pd.DataFrame(usdjpy.Close)
+    df['Date'] = df.index
+    fig = px.line(df, x='Date', y='Close', title='usdjpy')
+    return st.plotly_chart(fig)
 
 num_company = st.sidebar.slider('Number of Companies', 1, 30)
 
 if st.button('Show Plots'):
     st.header('Stock Closing Price')
+    usdjpy_plot()
     for i, j in zip(list(df_selected_sector.code)[:num_company],
                     list(df_selected_sector.company)[:num_company]):
         price_plot(i, j)
+
+## yahooo finance ライブラリが動かなくなったら、以下の書き方もある
+# import pandas_datareader as pdr
+# pair='USDJPY=X' #AUDJPY=X USDJPY=X EURJPY=X
+# data = pdr.DataReader(pair, 'yahoo', end='2021-07-10', start='2021-07-04')
